@@ -37,7 +37,7 @@ const UploadPictureAndVideo: React.FC<UploadPictureAndVideoProps> = ({
         htmlFor="file-upload"
         className="cursor-pointer bg-blue-500 text-white py-2 px-4 rounded-md mb-4"
       >
-        Upload Files
+        Upload Images and Vidéos
       </label>
       <input
         id="file-upload"

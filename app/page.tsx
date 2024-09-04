@@ -1,7 +1,7 @@
 "use client";
 
 import ButtonAddStickerOnFiles from "@/components/ButtonAddStickerOnFiles";
-import MiniatureUpload from "@/components/MinuiatureUpload";
+
 import PositionSticker from "@/components/PositionSticker";
 import UploadPictureAndVideo from "@/components/uploadPictureAndVideo";
 import UploadSticker from "@/components/UploadSticker";
@@ -28,10 +28,8 @@ export default function Home() {
         <h1 className="text-3xl font-bold text-center text-gray-900">
           Welcome to App Sticker
         </h1>
-        <div className="card p-4 border rounded-md shadow-md">
-          {/* <MiniatureUpload files={files} /> */}
-        </div>
-        <div>{/* <UploadSticker onFilesChange={handleFilesChange} /> */}</div>
+        <div className="card p-4 border rounded-md shadow-md"></div>
+        <div></div>
         {stickerUrl && (
           <div className="mt-4">
             <h2 className="text-xl font-semibold">Sticker à insérer</h2>
