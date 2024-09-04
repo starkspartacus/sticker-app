@@ -1,67 +1,96 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
+import UploadPictureAndVideo from "./uploadPictureAndVideo";
+import Image from "next/image";
 import JSZip from "jszip";
 import { saveAs } from "file-saver";
-import uploadPictureAndVideo from "./uploadPictureAndVideo";
-import MinuiatureUpload from "./MinuiatureUpload";
 
-// Interface for the component props
-interface ButtonAddStickerOnFilesProps {
-  stickerUrl: string | null;
+interface MiniatureUploadProps {
   files: File[];
+  stickerUrl: string | null;
 }
 
-const ButtonAddStickerOnFiles: React.FC<ButtonAddStickerOnFilesProps> = ({
-  stickerUrl,
+const MiniatureUpload: React.FC<MiniatureUploadProps> = ({
   files,
+  stickerUrl,
 }) => {
-  useEffect(() => {
-    console.log("stickerUrl:", stickerUrl);
-    console.log("files:", files);
-  }, [stickerUrl, files]);
-
+  const [filesState, setFilesState] = useState<File[]>([]);
+  const [thumbnails, setThumbnails] = useState<string[]>([]);
+  const [selectedFile, setSelectedFile] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
 
-  // Function to add sticker to all files and zip them
+  const handleFilesChange = (newFiles: File[]) => {
+    setFilesState(newFiles);
+    generateThumbnails(newFiles);
+  };
+
+  const generateThumbnails = (files: File[]) => {
+    const newThumbnails: string[] = [];
+    files.forEach((file) => {
+      if (file.type.startsWith("video/")) {
+        const video = document.createElement("video");
+        video.src = URL.createObjectURL(file);
+        video.currentTime = 1;
+
+        video.onloadeddata = () => {
+          const canvas = document.createElement("canvas");
+          canvas.width = video.videoWidth;
+          canvas.height = video.videoHeight;
+          const ctx = canvas.getContext("2d");
+          ctx?.drawImage(video, 0, 0, canvas.width, canvas.height);
+          newThumbnails.push(canvas.toDataURL());
+          setThumbnails([...newThumbnails]);
+        };
+
+        video.onerror = () => {
+          console.error("Failed to load video for thumbnail generation");
+        };
+      } else {
+        newThumbnails.push(URL.createObjectURL(file));
+        setThumbnails([...newThumbnails]);
+      }
+    });
+  };
+
+  const handleThumbnailClick = (thumbnail: string) => {
+    setSelectedFile(thumbnail);
+  };
+
+  const closeModal = () => {
+    setSelectedFile(null);
+  };
+
   const addStickerAndZipFiles = async () => {
-    if (!stickerUrl || files.length === 0) return;
+    if (!stickerUrl || filesState.length === 0) return;
 
     setIsProcessing(true);
 
-    // Create a new JSZip instance
     const zip = new JSZip();
-    // Fetch the sticker image as a Blob
     const stickerImage = await fetch(stickerUrl).then((res) => res.blob());
 
-    // Iterate over each file
-    files.forEach((file, index) => {
+    filesState.forEach((file, index) => {
       const fileReader = new FileReader();
       fileReader.onload = (e) => {
-        const img = new Image();
+        const img = document.createElement("img");
         img.src = e.target?.result as string;
         img.onload = () => {
           const canvas = document.createElement("canvas");
           const ctx = canvas.getContext("2d");
 
           if (ctx) {
-            // Set canvas dimensions to match the image
             canvas.width = img.width;
             canvas.height = img.height;
-            // Draw the original image on the canvas
             ctx.drawImage(img, 0, 0);
-            // Draw the sticker image on top of the original image
-            const stickerImg = new Image();
+            const stickerImg = document.createElement("img");
             stickerImg.src = URL.createObjectURL(stickerImage);
             stickerImg.onload = () => {
-              ctx.drawImage(stickerImg, 0, 0, 100, 100); // Adjust sticker size and position as needed
+              ctx.drawImage(stickerImg, 0, 0, 100, 100);
 
-              // Convert the canvas to a Blob and add it to the zip file
               canvas.toBlob((blob) => {
                 if (blob) {
                   zip.file(`file_with_sticker_${index + 1}.png`, blob);
-                  // If this is the last file, generate the zip and trigger download
-                  if (index === files.length - 1) {
+                  if (index === filesState.length - 1) {
                     zip
                       .generateAsync({ type: "blob" })
                       .then((content: Blob) => {
@@ -80,14 +109,64 @@ const ButtonAddStickerOnFiles: React.FC<ButtonAddStickerOnFilesProps> = ({
   };
 
   return (
-    <button
-      onClick={addStickerAndZipFiles}
-      className="bg-green-500 text-white py-2 px-4 rounded-md"
-      disabled={isProcessing}
-    >
-      {isProcessing ? "Processing..." : "Add Sticker and Zip Files"}
-    </button>
+    <div>
+      <UploadPictureAndVideo onFilesChange={handleFilesChange} />
+      <div className="flex space-x-4 mt-4">
+        {thumbnails.map((thumbnail, index) => (
+          <div
+            key={index}
+            className="w-24 h-24 rounded-md overflow-hidden cursor-pointer"
+            onClick={() => handleThumbnailClick(thumbnail)}
+          >
+            <Image
+              src={thumbnail}
+              alt={`preview-${index}`}
+              className="w-full h-full object-cover"
+              width={18}
+              height={18}
+            />
+          </div>
+        ))}
+      </div>
+
+      <button
+        onClick={addStickerAndZipFiles}
+        className="bg-green-500 text-white py-2 px-4 rounded-md mt-4"
+        disabled={isProcessing}
+      >
+        {isProcessing ? "Processing..." : "Add Sticker and Zip Files"}
+      </button>
+
+      {selectedFile && (
+        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
+          <div className="relative">
+            <button
+              className="absolute top-2 right-2 text-white"
+              onClick={closeModal}
+            >
+              X
+            </button>
+            {selectedFile.startsWith("data:video/") ? (
+              <video
+                src={selectedFile}
+                controls
+                className="max-w-full max-h-full"
+                autoPlay
+              />
+            ) : (
+              <Image
+                src={selectedFile}
+                alt="Selected preview"
+                className="max-w-full max-h-full"
+                width={800}
+                height={800}
+              />
+            )}
+          </div>
+        </div>
+      )}
+    </div>
   );
 };
 
-export default ButtonAddStickerOnFiles;
+export default MiniatureUpload;

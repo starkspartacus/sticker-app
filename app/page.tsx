@@ -2,6 +2,7 @@
 
 import ButtonAddStickerOnFiles from "@/components/ButtonAddStickerOnFiles";
 import MiniatureUpload from "@/components/MinuiatureUpload";
+import PositionSticker from "@/components/PositionSticker";
 import UploadPictureAndVideo from "@/components/uploadPictureAndVideo";
 import UploadSticker from "@/components/UploadSticker";
 import Image from "next/image";
@@ -28,14 +29,12 @@ export default function Home() {
           Welcome to App Sticker
         </h1>
         <div className="card p-4 border rounded-md shadow-md">
-          <MiniatureUpload />
+          {/* <MiniatureUpload files={files} /> */}
         </div>
-        <div>
-          <UploadSticker onFilesChange={handleFilesChange} />
-        </div>
+        <div>{/* <UploadSticker onFilesChange={handleFilesChange} /> */}</div>
         {stickerUrl && (
           <div className="mt-4">
-            <h2 className="text-xl font-semibold">Sticker Preview:</h2>
+            <h2 className="text-xl font-semibold">Sticker à insérer</h2>
             <Image
               src={stickerUrl}
               alt="Sticker Preview"
@@ -44,6 +43,19 @@ export default function Home() {
             />
           </div>
         )}
+        <div>
+          <PositionSticker
+            onStickerChange={(newSticker) => {
+              if (newSticker instanceof File) {
+                const url = URL.createObjectURL(newSticker);
+                setStickerUrl(url);
+              } else {
+                setStickerUrl(newSticker);
+              }
+            }}
+            onPositionChange={(newPosition) => console.log(newPosition)}
+          />
+        </div>
       </div>
       <div>
         <ButtonAddStickerOnFiles stickerUrl={stickerUrl} files={files} />
