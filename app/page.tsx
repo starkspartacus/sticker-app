@@ -3,6 +3,7 @@
 import ButtonAddStickerOnFiles from "@/components/ButtonAddStickerOnFiles";
 
 import PositionSticker from "@/components/PositionSticker";
+import { BorderBeam } from "@/components/ui/border-beam";
 import UploadPictureAndVideo from "@/components/uploadPictureAndVideo";
 import UploadSticker from "@/components/UploadSticker";
 import Image from "next/image";
@@ -56,7 +57,9 @@ export default function Home() {
         </div>
       </div>
       <div>
-        <ButtonAddStickerOnFiles stickerUrl={stickerUrl} files={files} />
+        {stickerUrl && (
+          <ButtonAddStickerOnFiles stickerUrl={stickerUrl} files={files} />
+        )}
       </div>
     </>
   );

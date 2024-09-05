@@ -20,50 +20,48 @@ const PositionSticker: React.FC<PositionStickerProps> = ({
   const [sticker, setSticker] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
+  // Gérer le changement de sticker et notifier le parent
   useEffect(() => {
     if (sticker) {
       const url = URL.createObjectURL(sticker);
       setPreviewUrl(url);
+      onStickerChange(sticker);
     }
-  }, [sticker]);
+  }, [sticker, onStickerChange]);
 
+  // Notifier le parent des changements de position
+  useEffect(() => {
+    onPositionChange(position);
+  }, [position, onPositionChange]);
+
+  // Fonction pour mettre à jour le sticker lors de son upload
   const handleStickerChange = (files: File[]) => {
     const newSticker = files.length > 0 ? files[0] : null;
     setSticker(newSticker);
-    onStickerChange(newSticker);
   };
 
+  // Gérer le changement de position avec le slider
   const handlePositionChange = (axis: "x" | "y", value: number) => {
     const newPosition = { ...position, [axis]: value };
     setPosition(newPosition);
-    onPositionChange(newPosition);
   };
 
-  const positionOptions = [
-    { label: "En haut à gauche", value: { x: 0, y: 0 } },
-    { label: "En haut à droite", value: { x: 100, y: 0 } },
-    { label: "En bas à gauche", value: { x: 0, y: 100 } },
-    { label: "En bas à droite", value: { x: 100, y: 100 } },
-    { label: "Au centre", value: { x: 50, y: 50 } },
-    { label: "En bas centré", value: { x: 50, y: 100 } },
-    { label: "En haut centré", value: { x: 50, y: 0 } },
-  ];
-
+  // Gérer la sélection d'une position prédéfinie
   const handlePositionSelect = (
     event: React.ChangeEvent<HTMLSelectElement>
   ) => {
     const selectedPosition = JSON.parse(event.target.value);
     setPosition(selectedPosition);
-    onPositionChange(selectedPosition);
   };
 
   return (
     <div className="flex flex-col items-center justify-center p-4 border rounded-md shadow-md bg-white">
+      {/* Composant d'upload de sticker */}
       <UploadSticker onFilesChange={handleStickerChange} />
 
       {previewUrl && (
         <div className="relative mt-4 mb-4 w-full h-64 border rounded-md overflow-hidden bg-gray-200 flex items-center justify-center">
-          {/* Conteneur de prévisualisation */}
+          {/* Sticker avec la position mise à jour */}
           <Image
             src={previewUrl}
             alt="Sticker Preview"
@@ -71,8 +69,8 @@ const PositionSticker: React.FC<PositionStickerProps> = ({
             style={{
               left: `${position.x}%`,
               top: `${position.y}%`,
-              transform: "translate(-50%, -50%)", // Centrer le sticker selon la position
-              position: "absolute", // Assurer un positionnement absolu
+              transform: "translate(-50%, -50%)",
+              position: "absolute",
             }}
             width={100}
             height={100}
@@ -89,13 +87,23 @@ const PositionSticker: React.FC<PositionStickerProps> = ({
         onChange={handlePositionSelect}
         className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
       >
-        {positionOptions.map((option) => (
-          <option key={option.label} value={JSON.stringify(option.value)}>
-            {option.label}
-          </option>
-        ))}
+        {/* Options de position prédéfinies */}
+        <option value={JSON.stringify({ x: 0, y: 0 })}>En haut à gauche</option>
+        <option value={JSON.stringify({ x: 100, y: 0 })}>
+          En haut à droite
+        </option>
+        <option value={JSON.stringify({ x: 0, y: 100 })}>
+          En bas à gauche
+        </option>
+        <option value={JSON.stringify({ x: 100, y: 100 })}>
+          En bas à droite
+        </option>
+        <option value={JSON.stringify({ x: 50, y: 50 })}>Au centre</option>
+        <option value={JSON.stringify({ x: 50, y: 100 })}>En bas centré</option>
+        <option value={JSON.stringify({ x: 50, y: 0 })}>En haut centré</option>
       </select>
 
+      {/* Sliders pour ajuster manuellement la position */}
       <div className="flex flex-col mt-4 w-full">
         <label className="text-gray-700">Position horizontale (X)</label>
         <input
