@@ -4,17 +4,19 @@ import { saveAs } from "file-saver";
 import JSZip from "jszip";
 import React, { useState } from "react";
 
-// Props pour recevoir les fichiers et le sticker à appliquer
+// Props pour recevoir les fichiers, le sticker à appliquer, la position et la taille
 interface ButtonAddStickerOnFilesProps {
   files: File[];
   stickerUrl: string | null;
   stickerPosition: { x: number; y: number };
+  stickerSize: number; // Nouvelle propriété pour la taille du sticker
 }
 
 const ButtonAddStickerOnFiles: React.FC<ButtonAddStickerOnFilesProps> = ({
   files,
   stickerUrl,
   stickerPosition,
+  stickerSize, // Taille dynamique du sticker
 }) => {
   const [isProcessing, setIsProcessing] = useState(false);
 
@@ -46,13 +48,13 @@ const ButtonAddStickerOnFiles: React.FC<ButtonAddStickerOnFilesProps> = ({
             stickerImg.src = URL.createObjectURL(stickerImage);
 
             stickerImg.onload = () => {
-              // Appliquer le sticker à la position sélectionnée
+              // Appliquer le sticker à la position sélectionnée avec la taille dynamique
               ctx.drawImage(
                 stickerImg,
-                (stickerPosition.x / 100) * canvas.width,
-                (stickerPosition.y / 100) * canvas.height,
-                100, // Taille du sticker (fixe, ajustable)
-                100
+                (stickerPosition.x / 100) * canvas.width, // Position X en pourcentage
+                (stickerPosition.y / 100) * canvas.height, // Position Y en pourcentage
+                stickerSize, // Utilisation de la taille du sticker dynamique
+                stickerSize // Largeur et hauteur égales pour garder le sticker carré
               );
 
               // Convertir le canvas modifié en blob
@@ -61,10 +63,12 @@ const ButtonAddStickerOnFiles: React.FC<ButtonAddStickerOnFilesProps> = ({
                   zip.file(`file_with_sticker_${index + 1}.png`, blob);
                   if (index === files.length - 1) {
                     // Quand tous les fichiers sont prêts, générer le zip
-                    zip.generateAsync({ type: "blob" }).then((content: Blob) => {
-                      saveAs(content, "files_with_stickers.zip");
-                      setIsProcessing(false);
-                    });
+                    zip
+                      .generateAsync({ type: "blob" })
+                      .then((content: Blob) => {
+                        saveAs(content, "files_with_stickers.zip");
+                        setIsProcessing(false);
+                      });
                   }
                 }
               });
@@ -81,7 +85,7 @@ const ButtonAddStickerOnFiles: React.FC<ButtonAddStickerOnFilesProps> = ({
     <div>
       <button
         onClick={addStickerAndZipFiles}
-        className="bg-green-500 text-white py-2 px-4 rounded-md mt-4"
+        className="bg-green-500 text-white py-2 px-4 rounded-md mt-4 justify-center items-center"
         disabled={isProcessing}
       >
         {isProcessing ? "Processing..." : "Add Sticker and Zip Files"}

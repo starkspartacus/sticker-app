@@ -9,7 +9,10 @@ interface PositionStickerProps {
   onPositionChange: (position: { x: number; y: number }) => void;
 }
 
-const PositionSticker: React.FC<PositionStickerProps> = ({ onStickerChange, onPositionChange }) => {
+const PositionSticker: React.FC<PositionStickerProps> = ({
+  onStickerChange,
+  onPositionChange,
+}) => {
   const [position, setPosition] = useState<{ x: number; y: number }>({
     x: 50,
     y: 50,
@@ -17,30 +20,38 @@ const PositionSticker: React.FC<PositionStickerProps> = ({ onStickerChange, onPo
   const [sticker, setSticker] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
+  // Met à jour l'URL de prévisualisation chaque fois que le sticker change
   useEffect(() => {
     if (sticker) {
       const url = URL.createObjectURL(sticker);
       setPreviewUrl(url);
+
+      // Nettoie l'URL lorsque le composant est démonté ou que le sticker change
+      return () => {
+        URL.revokeObjectURL(url);
+      };
+    } else {
+      setPreviewUrl(null); // Remet l'URL à null si aucun sticker n'est sélectionné
     }
   }, [sticker]);
 
-  const handleStickerChange = (files: File[]) => {
-    const newSticker = files.length > 0 ? files[0] : null;
-    setSticker(newSticker);
-    onStickerChange(newSticker);
+  const handleStickerChange = (file: File | null) => {
+    setSticker(file);
+    onStickerChange(file); // Passe le fichier au composant parent
   };
 
   const handlePositionChange = (axis: "x" | "y", value: number) => {
     const newPosition = { ...position, [axis]: value };
     setPosition(newPosition);
-    onPositionChange(newPosition);
+    onPositionChange(newPosition); // Informe le composant parent de la nouvelle position
   };
 
   return (
     <div className="flex flex-col items-center justify-center p-4 border rounded-md shadow-md bg-white">
-      <UploadSticker onFilesChange={handleStickerChange} />
+      <UploadSticker onStickerChange={handleStickerChange} />
 
-      {previewUrl && (
+      {/* Zone de prévisualisation du sticker */}
+      {previewUrl ? (
         <div className="relative mt-4 mb-4 w-full h-64 border rounded-md overflow-hidden bg-gray-200 flex items-center justify-center">
           <Image
             src={previewUrl}
@@ -57,11 +68,21 @@ const PositionSticker: React.FC<PositionStickerProps> = ({ onStickerChange, onPo
             priority={true}
           />
         </div>
+      ) : (
+        <div className="mt-4 mb-4 w-1/2 md:w-full h-64 border rounded-md overflow-hidden bg-gray-200 flex items-center justify-center">
+          <p className="text-gray-500">
+            Aucun autocollant n&lsquo;a été téléchargé. Veuillez en télécharger
+            un
+          </p>
+        </div>
       )}
 
-      <label className="mb-2 mt-4 font-semibold text-gray-700">Position du Sticker</label>
+      {/* Contrôle pour ajuster la position du sticker */}
+      <label className="mb-2 mt-4 font-semibold text-gray-700">
+        Position du Sticker
+      </label>
 
-      <div className="flex flex-col mt-4 w-full">
+      <div className="flex flex-col mt-4 md:w-full">
         <label className="text-gray-700">Position horizontale (X)</label>
         <input
           type="range"

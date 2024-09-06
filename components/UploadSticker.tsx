@@ -2,68 +2,101 @@
 
 import React, { useState } from "react";
 
-// Interface for the component props
 interface UploadStickerProps {
-  onFilesChange: (files: File[]) => void;
+  onStickerChange: (file: File | null, size: number) => void;
 }
 
-// UploadSticker component
-const UploadSticker: React.FC<UploadStickerProps> = ({ onFilesChange }) => {
-  // State to store the uploaded files
-  const [files, setFiles] = useState<File[]>([]);
+const UploadSticker: React.FC<UploadStickerProps> = ({ onStickerChange }) => {
+  const [sticker, setSticker] = useState<File | null>(null);
+  const [size, setSize] = useState(100); // Taille par défaut du sticker (100px)
 
-  // Function to handle file input change
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (event.target.files) {
-      // Convert FileList to an array and update state
-      const newFiles = Array.from(event.target.files);
-      setFiles([...files, ...newFiles]);
-      // Call the onFilesChange prop with the new files
-      onFilesChange([...files, ...newFiles]);
+  const handleStickerChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (event.target.files && event.target.files[0]) {
+      const newSticker = event.target.files[0];
+      setSticker(newSticker);
+      onStickerChange(newSticker, size);
     }
   };
 
-  // Function to handle file drop
-  const handleDrop = (event: React.DragEvent<HTMLDivElement>) => {
-    event.preventDefault();
-    if (event.dataTransfer.files) {
-      // Convert FileList to an array and update state
-      setFiles([...files, ...Array.from(event.dataTransfer.files)]);
-      // Call the onFilesChange prop with the new files
-      onFilesChange([...files, ...Array.from(event.dataTransfer.files)]);
+  const handleSizeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const newSize = parseInt(event.target.value);
+    setSize(newSize);
+    if (sticker) {
+      onStickerChange(sticker, newSize); // Mettre à jour la taille du sticker
     }
   };
 
-  // Function to handle drag over event
-  const handleDragOver = (event: React.DragEvent<HTMLDivElement>) => {
-    event.preventDefault();
+  const handleRemoveSticker = () => {
+    setSticker(null);
+    onStickerChange(null, size); // Réinitialiser le sticker à null
   };
 
   return (
-    <div className="flex flex-col items-center justify-center p-4 border rounded-md shadow-md">
-      {/* Label for file input */}
-      <label
-        htmlFor="sticker-upload"
-        className="cursor-pointer bg-blue-500 text-white py-2 px-4 rounded-md mb-4"
-      >
-        Upload Stickers
-      </label>
-      {/* Hidden file input */}
-      <input
-        id="sticker-upload"
-        type="file"
-        accept="image/*"
-        multiple
-        className="hidden"
-        onChange={handleFileChange}
-      />
-      {/* Drop area for files */}
-      <div
-        className="border-dashed border-2 border-gray-400 p-4 rounded-md text-center"
-        onDrop={handleDrop}
-        onDragOver={handleDragOver}
-      >
-        or drop stickers here
+    <div className="flex flex-col items-center justify-center p-4">
+      <div className="relative w-full max-w-lg p-6 border rounded-md shadow-md">
+        {/* Upload du sticker */}
+        {!sticker ? (
+          <>
+            <label
+              htmlFor="sticker-upload"
+              className="cursor-pointer bg-blue-500 text-white py-2 px-4 rounded-md mb-4"
+            >
+              Upload Sticker
+            </label>
+            <input
+              id="sticker-upload"
+              type="file"
+              accept="image/*" // On accepte uniquement les images pour les stickers
+              className="hidden"
+              onChange={handleStickerChange}
+            />
+          </>
+        ) : (
+          <div className="flex flex-col items-center">
+            <img
+              src={URL.createObjectURL(sticker)}
+              alt="Uploaded Sticker"
+              style={{ width: `${size}px`, height: `${size}px` }}
+              className="mb-4"
+            />
+            {/* Contrôle de la taille du sticker */}
+            <label htmlFor="size-slider" className="mb-2">
+              Sticker Size: {size}px
+            </label>
+            <input
+              id="size-slider"
+              type="range"
+              min="50"
+              max="1000"
+              value={size}
+              onChange={handleSizeChange}
+              className="mb-4"
+            />
+
+            {/* Bouton pour supprimer et remplacer le sticker */}
+            <div className="flex space-x-2">
+              <button
+                className="bg-red-500 text-white py-2 px-4 rounded-md"
+                onClick={handleRemoveSticker}
+              >
+                Remove Sticker
+              </button>
+              <label
+                htmlFor="sticker-upload"
+                className="cursor-pointer bg-blue-500 text-white py-2 px-4 rounded-md"
+              >
+                Replace Sticker
+              </label>
+            </div>
+            <input
+              id="sticker-upload"
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handleStickerChange}
+            />
+          </div>
+        )}
       </div>
     </div>
   );
