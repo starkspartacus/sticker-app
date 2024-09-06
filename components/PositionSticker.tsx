@@ -36,13 +36,13 @@ const PositionSticker: React.FC<PositionStickerProps> = ({
     }
   }, [sticker]);
 
-  const handleStickerChange = (files: File[]) => {
-    const newSticker = files.length > 0 ? files[0] : null;
-    setSticker(newSticker);
-    onStickerChange(newSticker);
+  const handleStickerChange = (file: File | null, size: number) => {
+    // Update handleStickerChange to accept size parameter
+    setSticker(file);
+    onStickerChange(file); // Pass the file to the parent component
+    setSize(size); // Set the size of the sticker
   };
 
-  // Gérer le changement de position avec le slider
   const handlePositionChange = (axis: "x" | "y", value: number) => {
     const newPosition = { ...position, [axis]: value };
     setPosition(newPosition);
