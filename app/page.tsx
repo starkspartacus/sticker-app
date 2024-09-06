@@ -2,7 +2,7 @@
 
 import ButtonAddStickerOnFiles from "@/components/ButtonAddStickerOnFiles";
 import PositionSticker from "@/components/PositionSticker";
-import { ConfettiSideCannons } from "@/components/ui/ConfettiSideCannons";
+
 import UploadPictureAndVideo from "@/components/uploadPictureAndVideo";
 import Image from "next/image";
 import { useState } from "react";
