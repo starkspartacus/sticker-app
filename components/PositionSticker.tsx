@@ -19,6 +19,7 @@ const PositionSticker: React.FC<PositionStickerProps> = ({
   });
   const [sticker, setSticker] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [size, setSize] = useState<number>(0); // New state for sticker size
 
   // Met à jour l'URL de prévisualisation chaque fois que le sticker change
   useEffect(() => {
@@ -35,9 +36,11 @@ const PositionSticker: React.FC<PositionStickerProps> = ({
     }
   }, [sticker]);
 
-  const handleStickerChange = (file: File | null) => {
+  const handleStickerChange = (file: File | null, size: number) => {
+    // Update handleStickerChange to accept size parameter
     setSticker(file);
-    onStickerChange(file); // Passe le fichier au composant parent
+    onStickerChange(file); // Pass the file to the parent component
+    setSize(size); // Set the size of the sticker
   };
 
   const handlePositionChange = (axis: "x" | "y", value: number) => {
@@ -63,8 +66,8 @@ const PositionSticker: React.FC<PositionStickerProps> = ({
               transform: "translate(-50%, -50%)", // Centrer le sticker selon la position
               position: "absolute",
             }}
-            width={100}
-            height={100}
+            width={size} // Update width to use the size state
+            height={size} // Update height to use the size state
             priority={true}
           />
         </div>

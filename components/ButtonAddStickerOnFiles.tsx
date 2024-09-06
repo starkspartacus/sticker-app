@@ -3,6 +3,7 @@
 import { saveAs } from "file-saver";
 import JSZip from "jszip";
 import React, { useState } from "react";
+import ShinyButton from "./magicui/shiny-button";
 
 // Props pour recevoir les fichiers, le sticker à appliquer, la position et la taille
 interface ButtonAddStickerOnFilesProps {
@@ -83,13 +84,16 @@ const ButtonAddStickerOnFiles: React.FC<ButtonAddStickerOnFilesProps> = ({
 
   return (
     <div>
-      <button
-        onClick={addStickerAndZipFiles}
-        className="bg-green-500 text-white py-2 px-4 rounded-md mt-4 justify-center items-center"
-        disabled={isProcessing}
-      >
-        {isProcessing ? "Processing..." : "Add Sticker and Zip Files"}
-      </button>
+      {isProcessing ? (
+        "Traitement..."
+      ) : (
+        <ShinyButton
+          text="Télécharger vos images et vidéos"
+          onClick={addStickerAndZipFiles}
+          className="bg-green-500 text-white py-2 px-4 rounded-md mt-4 justify-center items-center"
+          disabled={isProcessing}
+        />
+      )}
     </div>
   );
 };

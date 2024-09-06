@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import React, { useState } from "react";
 
 interface UploadStickerProps {
@@ -53,21 +54,24 @@ const UploadSticker: React.FC<UploadStickerProps> = ({ onStickerChange }) => {
           </>
         ) : (
           <div className="flex flex-col items-center">
-            <img
+            <Image
               src={URL.createObjectURL(sticker)}
               alt="Uploaded Sticker"
               style={{ width: `${size}px`, height: `${size}px` }}
               className="mb-4"
+              priority={true}
+              width={size}
+              height={size}
             />
             {/* Contrôle de la taille du sticker */}
             <label htmlFor="size-slider" className="mb-2">
-              Sticker Size: {size}px
+              Taille du sticker: {size}px
             </label>
             <input
               id="size-slider"
               type="range"
               min="50"
-              max="1000"
+              max="500"
               value={size}
               onChange={handleSizeChange}
               className="mb-4"
@@ -79,13 +83,13 @@ const UploadSticker: React.FC<UploadStickerProps> = ({ onStickerChange }) => {
                 className="bg-red-500 text-white py-2 px-4 rounded-md"
                 onClick={handleRemoveSticker}
               >
-                Remove Sticker
+                Supprimer
               </button>
               <label
                 htmlFor="sticker-upload"
                 className="cursor-pointer bg-blue-500 text-white py-2 px-4 rounded-md"
               >
-                Replace Sticker
+                Remplacer
               </label>
             </div>
             <input
