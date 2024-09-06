@@ -6,9 +6,7 @@ interface UploadPictureAndVideoProps {
   onFilesChange: (files: File[]) => void;
 }
 
-const UploadPictureAndVideo: React.FC<UploadPictureAndVideoProps> = ({
-  onFilesChange,
-}) => {
+const UploadPictureAndVideo: React.FC<UploadPictureAndVideoProps> = ({ onFilesChange }) => {
   const [files, setFiles] = useState<File[]>([]);
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -23,8 +21,8 @@ const UploadPictureAndVideo: React.FC<UploadPictureAndVideoProps> = ({
     event.preventDefault();
     if (event.dataTransfer.files) {
       setFiles([...files, ...Array.from(event.dataTransfer.files)]);
+      onFilesChange([...files, ...Array.from(event.dataTransfer.files)]);
     }
-    onFilesChange([...files, ...Array.from(event.dataTransfer.files)]);
   };
 
   const handleDragOver = (event: React.DragEvent<HTMLDivElement>) => {
@@ -42,7 +40,7 @@ const UploadPictureAndVideo: React.FC<UploadPictureAndVideoProps> = ({
       <input
         id="file-upload"
         type="file"
-        accept="image/*,video/*"
+        accept="image/*"
         multiple
         className="hidden"
         onChange={handleFileChange}
