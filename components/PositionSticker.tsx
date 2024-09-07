@@ -19,67 +19,73 @@ const PositionSticker: React.FC<PositionStickerProps> = ({
   });
   const [sticker, setSticker] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  const [size, setSize] = useState<number>(0); // New state for sticker size
+  const [size, setSize] = useState<number>(100); // Default size for sticker
 
-  // Met à jour l'URL de prévisualisation chaque fois que le sticker change
   useEffect(() => {
     if (sticker) {
       const url = URL.createObjectURL(sticker);
       setPreviewUrl(url);
 
-      // Nettoie l'URL lorsque le composant est démonté ou que le sticker change
       return () => {
         URL.revokeObjectURL(url);
       };
     } else {
-      setPreviewUrl(null); // Remet l'URL à null si aucun sticker n'est sélectionné
+      setPreviewUrl(null);
     }
   }, [sticker]);
 
   const handleStickerChange = (file: File | null, size: number) => {
-    // Update handleStickerChange to accept size parameter
     setSticker(file);
-    onStickerChange(file); // Pass the file to the parent component
-    setSize(size); // Set the size of the sticker
+    onStickerChange(file);
+    setSize(size);
   };
 
   const handlePositionChange = (axis: "x" | "y", value: number) => {
-    const newPosition = { ...position, [axis]: value };
+    // Calculate the new position ensuring the sticker doesn't go out of bounds
+    const newPosition = {
+      ...position,
+      [axis]: value,
+    };
     setPosition(newPosition);
-    onPositionChange(newPosition); // Informe le composant parent de la nouvelle position
+    onPositionChange(newPosition);
+  };
+
+  const constrainedPosition = {
+    x: Math.min(Math.max(position.x, size / 2), 100 - size / 2),
+    y: Math.min(Math.max(position.y, size / 2), 100 - size / 2),
   };
 
   return (
     <div className="flex flex-col items-center justify-center p-4 border rounded-md shadow-md bg-white">
       <UploadSticker onStickerChange={handleStickerChange} />
 
-      {/* Zone de prévisualisation du sticker */}
       {previewUrl ? (
         <div className="relative mt-4 mb-4 w-full h-64 border rounded-md overflow-hidden bg-gray-200 flex items-center justify-center">
-          <Image
-            src={previewUrl}
-            alt="Sticker Preview"
+          <div
             className="absolute"
             style={{
-              left: `${position.x}%`,
-              top: `${position.y}%`,
-              transform: "translate(-50%, -50%)", // Centrer le sticker selon la position
-              position: "absolute",
+              left: `${constrainedPosition.x}%`,
+              top: `${constrainedPosition.y}%`,
+              transform: "translate(-50%, -50%)",
             }}
-            width={size} // Update width to use the size state
-            height={size} // Update height to use the size state
-            priority={true}
-          />
+          >
+            <Image
+              src={previewUrl}
+              alt="Sticker Preview"
+              width={size}
+              height={size}
+              priority={true}
+            />
+          </div>
         </div>
       ) : (
-        <div className="mt-4 mb-4 w-1/2 md:w-full  h-96 border rounded-md overflow-hidden bg-gray-200 flex items-center justify-center">
+        <div className="mt-4 mb-4 w-1/2 md:w-full h-96 border rounded-md overflow-hidden bg-gray-200 flex items-center justify-center">
           <p className="text-gray-500">
             Aucun autocollant n&lsquo;a été téléchargé. Veuillez en télécharger
           </p>
         </div>
       )}
 
-      {/* Contrôle pour ajuster la position du sticker */}
       <label className="mb-2 mt-4 font-semibold text-gray-700">
         Position du Sticker
       </label>
