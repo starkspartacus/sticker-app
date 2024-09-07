@@ -11,9 +11,6 @@ interface ButtonAddStickerOnFilesProps {
   stickerUrl: string | null;
   stickerPosition: { x: number; y: number };
   stickerSize: number; // Nouvelle propriété pour la taille du sticker
-  videoFile: File | null;
-  stickerImage: File | null;
-  position: { x: number; y: number };
 }
 
 const ButtonAddStickerOnFiles: React.FC<ButtonAddStickerOnFilesProps> = ({
@@ -21,42 +18,13 @@ const ButtonAddStickerOnFiles: React.FC<ButtonAddStickerOnFilesProps> = ({
   stickerUrl,
   stickerPosition,
   stickerSize, // Taille dynamique du sticker
-  videoFile,
-  stickerImage,
-  position,
 }) => {
-  const [processing, setProcessing] = useState(false);
-
-  const handleAddSticker = () => {
-    setProcessing(true);
-
-    const worker = new Worker(
-      new URL("../public/stickerWorker.js", import.meta.url)
-    );
-
-    worker.onmessage = (event) => {
-      if (event.data.success) {
-        const processedVideoBlob = event.data.processedVideoBlob;
-
-        // Téléchargement de la vidéo traitée
-        const url = URL.createObjectURL(processedVideoBlob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = "processed_video.webm";
-        a.click();
-        URL.revokeObjectURL(url);
-
-        setProcessing(false);
-      }
-    };
-
-    worker.postMessage({ videoFile, stickerImage, position });
-  };
+  const [isProcessing, setIsProcessing] = useState(false);
 
   const addStickerAndZipFiles = async () => {
     if (!stickerUrl || files.length === 0) return;
 
-    /* setIsProcessing(true); */
+    setIsProcessing(true);
     const zip = new JSZip();
     const stickerImage = await fetch(stickerUrl).then((res) => res.blob());
 
@@ -100,7 +68,7 @@ const ButtonAddStickerOnFiles: React.FC<ButtonAddStickerOnFilesProps> = ({
                       .generateAsync({ type: "blob" })
                       .then((content: Blob) => {
                         saveAs(content, "files_with_stickers.zip");
-                        setProcessing(false); // Corrected from setIsProcessing to setProcessing
+                        setIsProcessing(false);
                       });
                   }
                 }
@@ -116,14 +84,14 @@ const ButtonAddStickerOnFiles: React.FC<ButtonAddStickerOnFilesProps> = ({
 
   return (
     <div>
-      {processing ? ( // Changed from isProcessing to processing
+      {isProcessing ? (
         "Traitement..."
       ) : (
         <ShinyButton
           text="Télécharger vos images et vidéos"
           onClick={addStickerAndZipFiles}
           className="bg-green-500 text-white py-2 px-4 rounded-md mt-4 justify-center items-center"
-          disabled={processing}
+          disabled={isProcessing}
         />
       )}
     </div>
