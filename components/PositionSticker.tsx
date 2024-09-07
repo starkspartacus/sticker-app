@@ -72,10 +72,9 @@ const PositionSticker: React.FC<PositionStickerProps> = ({
           />
         </div>
       ) : (
-        <div className="mt-4 mb-4 w-1/2 md:w-full h-64 border rounded-md overflow-hidden bg-gray-200 flex items-center justify-center">
+        <div className="mt-4 mb-4 w-1/2 md:w-full  h-96 border rounded-md overflow-hidden bg-gray-200 flex items-center justify-center">
           <p className="text-gray-500">
             Aucun autocollant n&lsquo;a été téléchargé. Veuillez en télécharger
-            un
           </p>
         </div>
       )}

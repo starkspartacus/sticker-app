@@ -2,6 +2,7 @@
 
 import ButtonAddStickerOnFiles from "@/components/ButtonAddStickerOnFiles";
 import PositionSticker from "@/components/PositionSticker";
+import PreviewStickerOnFile from "@/components/previewStickerOnFile";
 
 import UploadPictureAndVideo from "@/components/uploadPictureAndVideo";
 import Image from "next/image";
@@ -18,8 +19,7 @@ export default function Home() {
     y: 50,
   });
   const [stickerSize, setStickerSize] = useState<number>(100); // Taille par défaut du sticker (100px)
-  const [videoFile, setVideoFile] = useState<File | null>(null);
-  const [stickerImage, setStickerImage] = useState<File | null>(null); // Update type to File | null
+  const [showPreview, setShowPreview] = useState<boolean>(false);
 
   const handleFilesChange = (files: File[]) => {
     setFiles(files);
@@ -51,10 +51,8 @@ export default function Home() {
               if (newSticker instanceof File) {
                 const url = URL.createObjectURL(newSticker);
                 setStickerUrl(url);
-                setStickerImage(newSticker); // Update logic to set File
               } else {
                 setStickerUrl(newSticker);
-                setStickerImage(null); // Handle non-File case
               }
             }}
             onPositionChange={(newPosition) => setStickerPosition(newPosition)}
@@ -65,17 +63,36 @@ export default function Home() {
           <UploadPictureAndVideo onFilesChange={handleFilesChange} />
         </div>
 
-        <div>
+        <div className="flex flex-row gap-4">
           <ButtonAddStickerOnFiles
             stickerUrl={stickerUrl}
             files={files}
             stickerPosition={stickerPosition}
             stickerSize={stickerSize}
-            videoFile={videoFile}
-            stickerImage={stickerImage}
-            position={stickerPosition} // Fix: replace 'position' with 'stickerPosition'
           />
+          {files.length > 0 && (
+            <button
+              onClick={() => setShowPreview(!showPreview)}
+              className=" bg-yellow-400 rounded-md p-3 text-white"
+            >
+              {showPreview ? "Cacher la Preview" : "Pré-visualiser tout"}
+            </button>
+          )}
         </div>
+
+        {showPreview && (
+          <div className="flex flex-wrap gap-4 mt-4">
+            {files.map((file, index) => (
+              <PreviewStickerOnFile
+                key={index}
+                file={file}
+                stickerUrl={stickerUrl}
+                stickerPosition={stickerPosition}
+                stickerSize={stickerSize}
+              />
+            ))}
+          </div>
+        )}
       </div>
     </>
   );
