@@ -20,7 +20,7 @@ const NavigationMenuComponent: React.FC = () => {
   };
 
   return (
-    <header className="bg-white shadow-md w-full">
+    <header className="bg-white shadow-md w-full static">
       <div className="container mx-auto px-4 py-4 flex justify-between items-center">
         <div className="flex items-center justify-start">
           <Image

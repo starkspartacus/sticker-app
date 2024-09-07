@@ -1,6 +1,7 @@
 "use client";
 
 import ButtonAddStickerOnFiles from "@/components/ButtonAddStickerOnFiles";
+import MiniatureImageUpload from "@/components/minuatureImageUpload";
 import PositionSticker from "@/components/PositionSticker";
 import PreviewStickerOnFile from "@/components/previewStickerOnFile";
 
@@ -46,6 +47,9 @@ export default function Home() {
         )} */}
         <div>
           <UploadPictureAndVideo onFilesChange={handleFilesChange} />
+          <MiniatureImageUpload
+            files={files} // Add this line to pass the files prop
+          />
         </div>
         <div>
           <PositionSticker

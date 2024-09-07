@@ -91,7 +91,7 @@ const UploadPictureAndVideo: React.FC<UploadPictureAndVideoProps> = ({
 
         {/* Liste des fichiers uploadés */}
         {files.length > 0 && (
-          <div className="mt-4">
+          <div className="mt-4 max-h-64 overflow-y-auto">
             <h3 className="text-lg font-semibold">Uploaded Files:</h3>
             <ul className="list-disc list-inside">
               {files.map((file, index) => (

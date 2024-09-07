@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import ShinyButton from "@/components/magicui/shiny-button";
-import ToggleSwitch from "@/components/ToggleSwitch";
+import ToggleSwitch from "@/components/ui/ToggleSwitch";
 
 const PricingPage: React.FC = () => {
   const [selectedCredits, setSelectedCredits] = useState<number>(200);
