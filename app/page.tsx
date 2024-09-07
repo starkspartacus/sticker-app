@@ -18,6 +18,8 @@ export default function Home() {
     y: 50,
   });
   const [stickerSize, setStickerSize] = useState<number>(100); // Taille par défaut du sticker (100px)
+  const [videoFile, setVideoFile] = useState<File | null>(null);
+  const [stickerImage, setStickerImage] = useState<File | null>(null); // Update type to File | null
 
   const handleFilesChange = (files: File[]) => {
     setFiles(files);
@@ -49,8 +51,10 @@ export default function Home() {
               if (newSticker instanceof File) {
                 const url = URL.createObjectURL(newSticker);
                 setStickerUrl(url);
+                setStickerImage(newSticker); // Update logic to set File
               } else {
                 setStickerUrl(newSticker);
+                setStickerImage(null); // Handle non-File case
               }
             }}
             onPositionChange={(newPosition) => setStickerPosition(newPosition)}
@@ -67,6 +71,9 @@ export default function Home() {
             files={files}
             stickerPosition={stickerPosition}
             stickerSize={stickerSize}
+            videoFile={videoFile}
+            stickerImage={stickerImage}
+            position={stickerPosition} // Fix: replace 'position' with 'stickerPosition'
           />
         </div>
       </div>

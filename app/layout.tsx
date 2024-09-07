@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import { NavigationMenuHeader } from "@/components/NavigationMenu";
+import NavigationMenu from "@/components/NavigationMenu";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -20,7 +20,7 @@ export default function RootLayout({
       <body className={inter.className}>
         <main>
           <div className="flex justify-center items-center p-4">
-            <NavigationMenuHeader />
+            <NavigationMenu />
           </div>
           {children}
         </main>
