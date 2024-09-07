@@ -34,14 +34,16 @@ const PositionSticker: React.FC<PositionStickerProps> = ({
     }
   }, [sticker]);
 
-  const handleStickerChange = (file: File | null, size: number) => {
+  const handleStickerChange = (file: File | null) => {
     setSticker(file);
     onStickerChange(file);
-    setSize(size);
+  };
+
+  const handleSizeChange = (value: number) => {
+    setSize(value);
   };
 
   const handlePositionChange = (axis: "x" | "y", value: number) => {
-    // Calculate the new position ensuring the sticker doesn't go out of bounds
     const newPosition = {
       ...position,
       [axis]: value,
@@ -51,8 +53,8 @@ const PositionSticker: React.FC<PositionStickerProps> = ({
   };
 
   const constrainedPosition = {
-    x: Math.min(Math.max(position.x, size / 2), 100 - size / 2),
-    y: Math.min(Math.max(position.y, size / 2), 100 - size / 2),
+    x: Math.min(Math.max(position.x, size / 2 / 3.2), 100 - size / 2 / 3.2),
+    y: Math.min(Math.max(position.y, size / 2 / 3.2), 100 - size / 2 / 3.2),
   };
 
   return (
@@ -110,6 +112,18 @@ const PositionSticker: React.FC<PositionStickerProps> = ({
           className="mt-2"
         />
       </div>
+
+      {/* <label className="mb-2 mt-4 font-semibold text-gray-700">
+        Taille du Sticker
+      </label>
+      <input
+        type="range"
+        min="50"
+        max="200"
+        value={size}
+        onChange={(e) => handleSizeChange(parseInt(e.target.value))}
+        className="mt-2"
+      /> */}
     </div>
   );
 };
