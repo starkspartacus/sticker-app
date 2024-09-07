@@ -34,7 +34,10 @@ const UploadSticker: React.FC<UploadStickerProps> = ({ onStickerChange }) => {
 
   return (
     <div className="flex flex-col items-center justify-center p-4">
-      <div className="relative w-full max-w-lg p-6 border rounded-md shadow-md">
+      <div
+        className="relative w-full max-w-lg p-6 border rounded-md shadow-md"
+        style={{ height: "377px", overflow: "hidden", width: "377px" }}
+      >
         {/* Upload du sticker */}
         {!sticker ? (
           <>
@@ -42,7 +45,7 @@ const UploadSticker: React.FC<UploadStickerProps> = ({ onStickerChange }) => {
               htmlFor="sticker-upload"
               className="cursor-pointer bg-blue-500 text-white py-2 px-4 rounded-md mb-4"
             >
-              Upload Sticker
+              Télécharge un sticker
             </label>
             <input
               id="sticker-upload"
@@ -53,7 +56,7 @@ const UploadSticker: React.FC<UploadStickerProps> = ({ onStickerChange }) => {
             />
           </>
         ) : (
-          <div className="flex flex-col items-center">
+          <div className="relative w-full h-full flex items-center justify-center">
             <Image
               src={URL.createObjectURL(sticker)}
               alt="Uploaded Sticker"
@@ -63,45 +66,50 @@ const UploadSticker: React.FC<UploadStickerProps> = ({ onStickerChange }) => {
               width={size}
               height={size}
             />
-            {/* Contrôle de la taille du sticker */}
-            <label htmlFor="size-slider" className="mb-2">
-              Taille du sticker: {size}px
-            </label>
-            <input
-              id="size-slider"
-              type="range"
-              min="50"
-              max="500"
-              value={size}
-              onChange={handleSizeChange}
-              className="mb-4"
-            />
-
-            {/* Bouton pour supprimer et remplacer le sticker */}
-            <div className="flex space-x-2">
-              <button
-                className="bg-red-500 text-white py-2 px-4 rounded-md"
-                onClick={handleRemoveSticker}
-              >
-                Supprimer
-              </button>
-              <label
-                htmlFor="sticker-upload"
-                className="cursor-pointer bg-blue-500 text-white py-2 px-4 rounded-md"
-              >
-                Remplacer
-              </label>
-            </div>
-            <input
-              id="sticker-upload"
-              type="file"
-              accept="image/*"
-              className="hidden"
-              onChange={handleStickerChange}
-            />
           </div>
         )}
       </div>
+
+      {sticker && (
+        <div className="flex flex-col items-center mt-4">
+          {/* Contrôle de la taille du sticker */}
+          <label htmlFor="size-slider" className="mb-2">
+            Taille du sticker: {size}px
+          </label>
+          <input
+            id="size-slider"
+            type="range"
+            min="50"
+            max="500"
+            value={size}
+            onChange={handleSizeChange}
+            className="mb-4"
+          />
+
+          {/* Boutons pour supprimer et remplacer le sticker */}
+          <div className="flex space-x-2">
+            <button
+              className="bg-red-500 text-white py-2 px-4 rounded-md"
+              onClick={handleRemoveSticker}
+            >
+              Supprimer
+            </button>
+            <label
+              htmlFor="sticker-upload"
+              className="cursor-pointer bg-blue-500 text-white py-2 px-4 rounded-md"
+            >
+              Remplacer
+            </label>
+          </div>
+          <input
+            id="sticker-upload"
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={handleStickerChange}
+          />
+        </div>
+      )}
     </div>
   );
 };

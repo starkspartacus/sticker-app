@@ -33,7 +33,7 @@ export default function Home() {
         </h1>
         <div className="card p-4 border rounded-md shadow-md"></div>
 
-        {stickerUrl && (
+        {/* {stickerUrl && (
           <div className="mt-4">
             <h2 className="text-xl font-semibold">Sticker à insérer</h2>
             <Image
@@ -43,8 +43,10 @@ export default function Home() {
               height={100}
             />
           </div>
-        )}
-
+        )} */}
+        <div>
+          <UploadPictureAndVideo onFilesChange={handleFilesChange} />
+        </div>
         <div>
           <PositionSticker
             onStickerChange={(newSticker) => {
@@ -57,10 +59,6 @@ export default function Home() {
             }}
             onPositionChange={(newPosition) => setStickerPosition(newPosition)}
           />
-        </div>
-
-        <div>
-          <UploadPictureAndVideo onFilesChange={handleFilesChange} />
         </div>
 
         <div className="flex flex-row gap-4">
