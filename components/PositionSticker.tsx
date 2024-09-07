@@ -53,7 +53,7 @@ const PositionSticker: React.FC<PositionStickerProps> = ({
   };
 
   const constrainedPosition = {
-    x: Math.min(Math.max(position.x, size / 2 / 3.2), 100 - size / 2 / 3.2),
+    x: Math.min(Math.max(position.x, size / 6 / 3.2), 100 - size / 2 / 3.2),
     y: Math.min(Math.max(position.y, size / 2 / 3.2), 100 - size / 2 / 3.2),
   };
 
@@ -68,6 +68,7 @@ const PositionSticker: React.FC<PositionStickerProps> = ({
             style={{
               left: `${constrainedPosition.x}%`,
               top: `${constrainedPosition.y}%`,
+              right: `${constrainedPosition.x}`,
               transform: "translate(-50%, -50%)",
             }}
           >

@@ -90,7 +90,7 @@ const ButtonAddStickerOnFiles: React.FC<ButtonAddStickerOnFilesProps> = ({
         <ShinyButton
           text="Télécharger vos images et vidéos"
           onClick={addStickerAndZipFiles}
-          className="bg-green-500 text-white py-2 px-4 rounded-md mt-4 justify-center items-center"
+          className="bg-green-600 text-white p-3 py-2 px-4 rounded-md mt-4 justify-center items-center"
           disabled={isProcessing}
         />
       )}

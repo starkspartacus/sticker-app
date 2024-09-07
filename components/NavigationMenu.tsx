@@ -58,9 +58,9 @@ const NavigationMenuComponent: React.FC = () => {
                 </Link>
               </NavigationMenuItem>
               <NavigationMenuItem>
-                <Link href="/contact" legacyBehavior passHref>
+                <Link href="/prix" legacyBehavior passHref>
                   <NavigationMenuLink className={navigationMenuTriggerStyle()}>
-                    Contact
+                    Prix
                   </NavigationMenuLink>
                 </Link>
               </NavigationMenuItem>
