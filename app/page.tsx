@@ -4,10 +4,11 @@ import ButtonAddStickerOnFiles from "@/components/ButtonAddStickerOnFiles";
 import MiniatureImageUpload from "@/components/minuatureImageUpload";
 import PositionSticker from "@/components/PositionSticker";
 import PreviewStickerOnFile from "@/components/previewStickerOnFile";
-
 import UploadPictureAndVideo from "@/components/uploadPictureAndVideo";
 import Image from "next/image";
 import { useState } from "react";
+import { motion } from "framer-motion";
+import "tailwind-scrollbar-hide";
 
 export default function Home() {
   const [stickerUrl, setStickerUrl] = useState<string | null>(null);
@@ -19,7 +20,7 @@ export default function Home() {
     x: 50,
     y: 50,
   });
-  const [stickerSize, setStickerSize] = useState<number>(100); // Taille par défaut du sticker (100px)
+  const [stickerSize, setStickerSize] = useState<number>(100);
   const [showPreview, setShowPreview] = useState<boolean>(false);
 
   const handleStickerChange = (file: File | null, size: number) => {
@@ -28,7 +29,7 @@ export default function Home() {
     } else {
       setStickerUrl(null);
     }
-    setStickerSize(size); // Mettre à jour la taille du sticker
+    setStickerSize(size);
   };
 
   const handleFilesChange = (newFiles: File[]) => {
@@ -37,33 +38,48 @@ export default function Home() {
 
   return (
     <>
-      <div className="">
-        <h1 className="text-3xl font-bold text-center text-gray-900">
+      <div className="p-4">
+        <h1 className="text-3xl font-bold text-center text-gray-900 mb-4">
           Welcome to App Sticker
         </h1>
-        <div className="card p-4 border rounded-md shadow-md"></div>
+        <div className="card p-4 border rounded-md shadow-md mb-4"></div>
 
-        {/* {stickerUrl && (
-          <div className="mt-4">
-            <h2 className="text-xl font-semibold">Sticker à insérer</h2>
-            <Image
-              src={stickerUrl}
-              alt="Sticker Preview"
-              width={100}
-              height={100}
+        <div className="flex flex-col md:flex-row justify-around items-start gap-4 w-full">
+          <motion.div
+            className="flex-1"
+            initial={{ x: 0 }}
+            animate={{ x: files.length > 0 ? -20 : 0 }}
+            transition={{ duration: 0.5 }}
+          >
+            <UploadPictureAndVideo
+              onStickerChange={handleStickerChange}
+              onFilesChange={handleFilesChange}
             />
-          </div>
-        )} */}
-        <div>
-          <UploadPictureAndVideo
-            onStickerChange={handleStickerChange}
-            onFilesChange={handleFilesChange} // Add this line
-          />
-          <MiniatureImageUpload
-            files={files} // Add this line to pass the files prop
-          />
+          </motion.div>
+          <motion.div
+            className="flex-1 overflow-x-auto overflow-y-auto scrollbar-hide grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4"
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{
+              opacity: files.length > 0 ? 1 : 0,
+              scale: files.length > 0 ? 1 : 0.8,
+            }}
+            transition={{ duration: 0.5 }}
+            style={{ maxHeight: "400px" }} // Ajout de la hauteur maximale
+          >
+            {files.map((file, index) => (
+              <motion.div
+                key={index}
+                className="w-24 h-24"
+                initial={{ scale: 0.8 }}
+                animate={{ scale: 1 }}
+                transition={{ duration: 0.5 }}
+              >
+                <MiniatureImageUpload files={[file]} />
+              </motion.div>
+            ))}
+          </motion.div>
         </div>
-        <div>
+        <div className="mt-4">
           <PositionSticker
             onStickerChange={(newSticker) => {
               if (newSticker instanceof File) {
@@ -77,7 +93,7 @@ export default function Home() {
           />
         </div>
 
-        <div className="flex flex-row gap-4">
+        <div className="flex flex-row gap-4 mt-4">
           <ButtonAddStickerOnFiles
             stickerUrl={stickerUrl}
             files={files}

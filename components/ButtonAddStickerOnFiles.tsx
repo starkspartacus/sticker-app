@@ -5,24 +5,27 @@ import JSZip from "jszip";
 import React, { useState, useEffect } from "react";
 import ShinyButton from "./magicui/shiny-button";
 import Confetti from "react-confetti";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
-// Props pour recevoir les fichiers, le sticker à appliquer, la position et la taille
 interface ButtonAddStickerOnFilesProps {
   files: File[];
   stickerUrl: string | null;
   stickerPosition: { x: number; y: number };
-  stickerSize: number; // Nouvelle propriété pour la taille du sticker
+  stickerSize: number;
 }
 
 const ButtonAddStickerOnFiles: React.FC<ButtonAddStickerOnFilesProps> = ({
   files,
   stickerUrl,
   stickerPosition,
-  stickerSize, // Taille dynamique du sticker
+  stickerSize,
 }) => {
   const [isProcessing, setIsProcessing] = useState(false);
+  const [progress, setProgress] = useState(0);
   const [showConfetti, setShowConfetti] = useState(false);
   const [windowSize, setWindowSize] = useState({ width: 0, height: 0 });
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const handleResize = () => {
@@ -34,73 +37,135 @@ const ButtonAddStickerOnFiles: React.FC<ButtonAddStickerOnFilesProps> = ({
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  const addStickerAndZipFiles = async () => {
-    if (!stickerUrl || files.length === 0) return;
-
-    setIsProcessing(true);
-    const zip = new JSZip();
-    const stickerImage = await fetch(stickerUrl).then((res) => res.blob());
-
-    for (let index = 0; index < files.length; index++) {
-      const file = files[index];
+  const processFile = async (
+    file: File,
+    stickerImage: HTMLImageElement,
+    index: number,
+    zip: JSZip
+  ): Promise<void> => {
+    return new Promise<void>((resolve, reject) => {
       const fileReader = new FileReader();
 
-      fileReader.onload = (e) => {
-        const img = new window.Image(); // Utilisation de l'objet global Image
-        img.src = e.target?.result as string;
-        img.onload = () => {
-          const canvas = document.createElement("canvas");
-          const ctx = canvas.getContext("2d");
+      fileReader.onload = async (e) => {
+        try {
+          const imageBuffer = e.target?.result as string;
+          const img = new Image();
+          img.src = imageBuffer;
 
-          if (ctx) {
-            // Taille du canvas selon l'image
-            canvas.width = img.width;
-            canvas.height = img.height;
-            ctx.drawImage(img, 0, 0); // Dessiner l'image d'origine
+          img.onload = () => {
+            const canvas = document.createElement("canvas");
+            const ctx = canvas.getContext("2d");
 
-            const stickerImg = new window.Image(); // Utilisation de l'objet global Image
-            stickerImg.src = URL.createObjectURL(stickerImage);
+            if (ctx) {
+              canvas.width = img.width;
+              canvas.height = img.height;
 
-            stickerImg.onload = () => {
-              // Appliquer le sticker à la position sélectionnée avec la taille dynamique
+              // Draw the original image
+              ctx.drawImage(img, 0, 0);
+
+              // Draw the sticker
+              const stickerX = (stickerPosition.x / 100) * img.width;
+              const stickerY = (stickerPosition.y / 100) * img.height;
               ctx.drawImage(
-                stickerImg,
-                (stickerPosition.x / 100) * canvas.width, // Position X en pourcentage
-                (stickerPosition.y / 100) * canvas.height, // Position Y en pourcentage
-                stickerSize, // Utilisation de la taille du sticker dynamique
-                stickerSize // Largeur et hauteur égales pour garder le sticker carré
+                stickerImage,
+                stickerX,
+                stickerY,
+                stickerSize,
+                stickerSize
               );
 
-              // Convertir le canvas modifié en blob
               canvas.toBlob((blob) => {
                 if (blob) {
-                  zip.file(`file_with_sticker_${index + 1}.png`, blob);
-                  if (index === files.length - 1) {
-                    // Quand tous les fichiers sont prêts, générer le zip
-                    zip
-                      .generateAsync({ type: "blob" })
-                      .then((content: Blob) => {
-                        saveAs(content, "files_with_stickers.zip");
-                        setIsProcessing(false);
-                        setShowConfetti(true);
-                        setTimeout(() => setShowConfetti(false), 5000); // Afficher les confettis pendant 5 secondes
-                      });
-                  }
+                  zip.file(file.name, blob);
+                  resolve();
+                } else {
+                  reject(new Error("Failed to process image"));
                 }
               });
-            };
-          }
-        };
+            } else {
+              reject(new Error("Failed to get canvas context"));
+            }
+          };
+
+          img.onerror = () => {
+            reject(new Error("Failed to load image"));
+          };
+        } catch (err) {
+          reject(err);
+        }
       };
 
       fileReader.readAsDataURL(file);
+    });
+  };
+
+  const processBatch = async (
+    batch: File[],
+    zip: JSZip,
+    stickerImage: HTMLImageElement,
+    startIndex: number
+  ): Promise<void> => {
+    await Promise.all(
+      batch.map((file, index) =>
+        processFile(file, stickerImage, startIndex + index, zip).then(() => {
+          setProgress(((startIndex + index + 1) / files.length) * 100);
+        })
+      )
+    );
+  };
+
+  const addStickerAndZipFiles = async (): Promise<void> => {
+    if (!stickerUrl || files.length === 0) return;
+
+    setIsProcessing(true);
+    try {
+      const stickerImage = new Image();
+      stickerImage.src = stickerUrl;
+
+      stickerImage.onload = async () => {
+        const zip = new JSZip();
+        const batchSize = 1; // Process 1 file at a time to reduce memory usage
+        for (let i = 0; i < files.length; i += batchSize) {
+          const batch = files.slice(i, i + batchSize);
+          await processBatch(batch, zip, stickerImage, i);
+        }
+
+        // Quand tous les fichiers sont prêts, générer le zip
+        zip.generateAsync({ type: "blob" }).then((content: Blob) => {
+          saveAs(content, "files_with_stickers.zip");
+          setIsProcessing(false);
+          setShowConfetti(true);
+          toast.success("Téléchargement terminé !");
+          setTimeout(() => {
+            setShowConfetti(false);
+            window.location.reload(); // Reset the page
+          }, 5000); // Afficher les confettis pendant 5 secondes
+        });
+      };
+
+      stickerImage.onerror = () => {
+        throw new Error("Failed to load sticker image");
+      };
+    } catch (error) {
+      console.error("Error processing files:", error);
+      setIsProcessing(false);
+      setError("Une erreur s'est produite lors du traitement des fichiers.");
+      toast.error("Une erreur s'est produite lors du traitement des fichiers.");
     }
   };
 
   return (
     <div>
       {isProcessing ? (
-        "Traitement..."
+        <div className="flex flex-col items-center">
+          <div className="w-full bg-gray-200 rounded-full h-4 mb-4">
+            <div
+              className="bg-green-600 h-4 rounded-full"
+              style={{ width: `${progress}%`, transition: "width 0.5s" }}
+            ></div>
+          </div>
+          <p>{progress.toFixed(2)}%</p>
+        </div>
       ) : (
         <ShinyButton
           text="Télécharger vos images et vidéos"
@@ -109,9 +174,18 @@ const ButtonAddStickerOnFiles: React.FC<ButtonAddStickerOnFilesProps> = ({
           disabled={isProcessing}
         />
       )}
+      {error && (
+        <button
+          onClick={addStickerAndZipFiles}
+          className="bg-red-500 text-white p-3 py-2 px-4 rounded-md mt-4 justify-center items-center"
+        >
+          Réessayer le traitement
+        </button>
+      )}
       {showConfetti && (
         <Confetti width={windowSize.width} height={windowSize.height} />
       )}
+      <ToastContainer />
     </div>
   );
 };

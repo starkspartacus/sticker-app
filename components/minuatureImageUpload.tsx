@@ -44,6 +44,7 @@ const MiniatureImageUpload: React.FC<MiniatureImageUploadProps> = ({
       <div className="flex flex-wrap gap-4 mt-4">
         {thumbnails.map((thumbnail, index) => {
           const file = files[index];
+          if (!file) return null; // Skip if file is undefined
           const isVideo = file.type.startsWith("video/");
           return (
             <div
@@ -63,8 +64,8 @@ const MiniatureImageUpload: React.FC<MiniatureImageUploadProps> = ({
                   }}
                   onTimeUpdate={(e) => {
                     const video = e.currentTarget;
-                    if (video.currentTime >= 2) {
-                      video.pause();
+                    if (video.currentTime > 0) {
+                      video.play();
                     }
                   }}
                 />
