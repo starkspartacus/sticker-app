@@ -2,8 +2,9 @@
 
 import { saveAs } from "file-saver";
 import JSZip from "jszip";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import ShinyButton from "./magicui/shiny-button";
+import Confetti from "react-confetti";
 
 // Props pour recevoir les fichiers, le sticker à appliquer, la position et la taille
 interface ButtonAddStickerOnFilesProps {
@@ -20,6 +21,18 @@ const ButtonAddStickerOnFiles: React.FC<ButtonAddStickerOnFilesProps> = ({
   stickerSize, // Taille dynamique du sticker
 }) => {
   const [isProcessing, setIsProcessing] = useState(false);
+  const [showConfetti, setShowConfetti] = useState(false);
+  const [windowSize, setWindowSize] = useState({ width: 0, height: 0 });
+
+  useEffect(() => {
+    const handleResize = () => {
+      setWindowSize({ width: window.innerWidth, height: window.innerHeight });
+    };
+
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   const addStickerAndZipFiles = async () => {
     if (!stickerUrl || files.length === 0) return;
@@ -69,6 +82,8 @@ const ButtonAddStickerOnFiles: React.FC<ButtonAddStickerOnFilesProps> = ({
                       .then((content: Blob) => {
                         saveAs(content, "files_with_stickers.zip");
                         setIsProcessing(false);
+                        setShowConfetti(true);
+                        setTimeout(() => setShowConfetti(false), 5000); // Afficher les confettis pendant 5 secondes
                       });
                   }
                 }
@@ -93,6 +108,9 @@ const ButtonAddStickerOnFiles: React.FC<ButtonAddStickerOnFilesProps> = ({
           className="bg-green-600 text-white p-3 py-2 px-4 rounded-md mt-4 justify-center items-center"
           disabled={isProcessing}
         />
+      )}
+      {showConfetti && (
+        <Confetti width={windowSize.width} height={windowSize.height} />
       )}
     </div>
   );

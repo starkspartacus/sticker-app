@@ -22,8 +22,17 @@ export default function Home() {
   const [stickerSize, setStickerSize] = useState<number>(100); // Taille par défaut du sticker (100px)
   const [showPreview, setShowPreview] = useState<boolean>(false);
 
-  const handleFilesChange = (files: File[]) => {
-    setFiles(files);
+  const handleStickerChange = (file: File | null, size: number) => {
+    if (file) {
+      setStickerUrl(URL.createObjectURL(file));
+    } else {
+      setStickerUrl(null);
+    }
+    setStickerSize(size); // Mettre à jour la taille du sticker
+  };
+
+  const handleFilesChange = (newFiles: File[]) => {
+    setFiles(newFiles);
   };
 
   return (
@@ -46,7 +55,10 @@ export default function Home() {
           </div>
         )} */}
         <div>
-          <UploadPictureAndVideo onFilesChange={handleFilesChange} />
+          <UploadPictureAndVideo
+            onStickerChange={handleStickerChange}
+            onFilesChange={handleFilesChange} // Add this line
+          />
           <MiniatureImageUpload
             files={files} // Add this line to pass the files prop
           />

@@ -5,10 +5,12 @@ import { BorderBeam } from "@/components/magicui/border-beam"; // Assurez-vous q
 
 interface UploadPictureAndVideoProps {
   onFilesChange: (files: File[]) => void;
+  onStickerChange: (file: File | null, size: number) => void;
 }
 
 const UploadPictureAndVideo: React.FC<UploadPictureAndVideoProps> = ({
   onFilesChange,
+  onStickerChange,
 }) => {
   const [files, setFiles] = useState<File[]>([]);
   const [isDragging, setIsDragging] = useState(false);
@@ -45,6 +47,13 @@ const UploadPictureAndVideo: React.FC<UploadPictureAndVideoProps> = ({
     const newFiles = files.filter((_, i) => i !== index);
     setFiles(newFiles);
     onFilesChange(newFiles);
+  };
+
+  // Use onStickerChange where necessary
+  // For example, when a file is uploaded:
+  const handleFileUpload = (file: File) => {
+    const size = 100; // Example size, replace with actual logic
+    onStickerChange(file, size);
   };
 
   return (

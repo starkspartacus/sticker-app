@@ -132,6 +132,15 @@ const PositionSticker: React.FC<PositionStickerProps> = ({
           onChange={(e) => handlePositionChange("y", parseInt(e.target.value))}
           className="mt-2 range-input"
         />
+        <label className="text-gray-700 mt-4">Taille du Sticker</label>
+        <input
+          type="range"
+          min="10"
+          max="200"
+          value={size}
+          onChange={(e) => handleSizeChange(parseInt(e.target.value))}
+          className="mt-2 range-input"
+        />
       </div>
 
       <ToastContainer />
