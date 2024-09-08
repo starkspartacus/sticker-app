@@ -24,6 +24,7 @@
     "react-dom": "^18",
     "react-modal": "^3.16.1",
     "react-photo-view": "^1.2.6",
+    "react-toastify": "^10.0.5",
     "react-use": "^17.5.1",
     "tailwind-merge": "^2.5.2",
     "tailwindcss-animate": "^1.0.7"

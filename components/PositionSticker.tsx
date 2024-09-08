@@ -2,6 +2,8 @@
 
 import Image from "next/image";
 import React, { useEffect, useState } from "react";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import UploadSticker from "./UploadSticker";
 
 interface PositionStickerProps {
@@ -20,6 +22,24 @@ const PositionSticker: React.FC<PositionStickerProps> = ({
   const [sticker, setSticker] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [size, setSize] = useState<number>(100); // Default size for sticker
+
+  useEffect(() => {
+    console.log("Position actuelle:", position);
+    if (position.x > 90 || position.y > 90) {
+      toast.warn(
+        "Attention, le sticker ne sera pas visible sur votre image. Merci de rester dans la limite.",
+        {
+          position: "top-center",
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+        }
+      );
+    }
+  }, [position]);
 
   useEffect(() => {
     if (sticker) {
@@ -101,7 +121,7 @@ const PositionSticker: React.FC<PositionStickerProps> = ({
           max="100"
           value={position.x}
           onChange={(e) => handlePositionChange("x", parseInt(e.target.value))}
-          className="mt-2"
+          className="mt-2 range-input"
         />
         <label className="text-gray-700 mt-4">Position verticale (Y)</label>
         <input
@@ -110,21 +130,11 @@ const PositionSticker: React.FC<PositionStickerProps> = ({
           max="100"
           value={position.y}
           onChange={(e) => handlePositionChange("y", parseInt(e.target.value))}
-          className="mt-2"
+          className="mt-2 range-input"
         />
       </div>
 
-      {/* <label className="mb-2 mt-4 font-semibold text-gray-700">
-        Taille du Sticker
-      </label>
-      <input
-        type="range"
-        min="50"
-        max="200"
-        value={size}
-        onChange={(e) => handleSizeChange(parseInt(e.target.value))}
-        className="mt-2"
-      /> */}
+      <ToastContainer />
     </div>
   );
 };
