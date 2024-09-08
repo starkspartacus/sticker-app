@@ -90,6 +90,7 @@ export default function Home() {
               }
             }}
             onPositionChange={(newPosition) => setStickerPosition(newPosition)}
+            onSizeChange={(newSize) => setStickerSize(newSize)} // Ajout de la gestion de la taille
           />
         </div>
 
@@ -98,7 +99,7 @@ export default function Home() {
             stickerUrl={stickerUrl}
             files={files}
             stickerPosition={stickerPosition}
-            stickerSize={stickerSize}
+            stickerSize={stickerSize} // Passer la taille du sticker
           />
           {files.length > 0 && (
             <button

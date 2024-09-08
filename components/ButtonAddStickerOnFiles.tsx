@@ -63,15 +63,17 @@ const ButtonAddStickerOnFiles: React.FC<ButtonAddStickerOnFilesProps> = ({
               // Draw the original image
               ctx.drawImage(img, 0, 0);
 
-              // Draw the sticker
+              // Draw the sticker with dynamic size
               const stickerX = (stickerPosition.x / 100) * img.width;
               const stickerY = (stickerPosition.y / 100) * img.height;
+              const scaledStickerSize =
+                (stickerSize / 100) * Math.min(img.width, img.height);
               ctx.drawImage(
                 stickerImage,
                 stickerX,
                 stickerY,
-                stickerSize,
-                stickerSize
+                scaledStickerSize,
+                scaledStickerSize
               );
 
               canvas.toBlob((blob) => {

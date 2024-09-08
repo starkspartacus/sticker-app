@@ -9,11 +9,13 @@ import UploadSticker from "./UploadSticker";
 interface PositionStickerProps {
   onStickerChange: (sticker: File | null) => void;
   onPositionChange: (position: { x: number; y: number }) => void;
+  onSizeChange: (size: number) => void;
 }
 
 const PositionSticker: React.FC<PositionStickerProps> = ({
   onStickerChange,
   onPositionChange,
+  onSizeChange,
 }) => {
   const [position, setPosition] = useState<{ x: number; y: number }>({
     x: 50,
@@ -59,8 +61,10 @@ const PositionSticker: React.FC<PositionStickerProps> = ({
     onStickerChange(file);
   };
 
-  const handleSizeChange = (value: number) => {
-    setSize(value);
+  const handleSizeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const newSize = parseInt(event.target.value, 10);
+    setSize(newSize);
+    onSizeChange(newSize);
   };
 
   const handlePositionChange = (axis: "x" | "y", value: number) => {
@@ -98,6 +102,7 @@ const PositionSticker: React.FC<PositionStickerProps> = ({
               width={size}
               height={size}
               priority={true}
+              className="sticker-image" // Ajoutez une classe CSS personnalisée si nécessaire
             />
           </div>
         </div>
@@ -138,7 +143,7 @@ const PositionSticker: React.FC<PositionStickerProps> = ({
           min="10"
           max="200"
           value={size}
-          onChange={(e) => handleSizeChange(parseInt(e.target.value))}
+          onChange={handleSizeChange}
           className="mt-2 range-input"
         />
       </div>
