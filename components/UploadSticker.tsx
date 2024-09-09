@@ -2,6 +2,8 @@
 
 import Image from "next/image";
 import React, { useState } from "react";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 interface UploadStickerProps {
   onStickerChange: (file: File | null, size: number) => void;
@@ -9,35 +11,8 @@ interface UploadStickerProps {
 
 const UploadSticker: React.FC<UploadStickerProps> = ({ onStickerChange }) => {
   const [sticker, setSticker] = useState<File | null>(null);
-  const [originalSticker, setOriginalSticker] = useState<File | null>(null);
   const [size, setSize] = useState(100); // Taille par défaut du sticker (100px)
   const [loading, setLoading] = useState(false);
-  const [removeBg, setRemoveBg] = useState(false);
-
-  const removeBackground = async (file: File): Promise<File | null> => {
-    const formData = new FormData();
-    formData.append("size", "auto");
-    formData.append("image_file", file);
-
-    try {
-      const response = await fetch("https://api.remove.bg/v1.0/removebg", {
-        method: "POST",
-        headers: { "X-Api-Key": "2UDa96fvsTuhKduNpX3Zfp79" },
-        body: formData,
-      });
-
-      if (response.ok) {
-        const blob = await response.blob();
-        return new File([blob], file.name, { type: blob.type });
-      } else {
-        console.error("Error:", response.status, response.statusText);
-        return null;
-      }
-    } catch (error) {
-      console.error("Error:", error);
-      return null;
-    }
-  };
 
   const handleStickerChange = async (
     event: React.ChangeEvent<HTMLInputElement>
@@ -45,14 +20,9 @@ const UploadSticker: React.FC<UploadStickerProps> = ({ onStickerChange }) => {
     if (event.target.files && event.target.files[0]) {
       setLoading(true);
       const newSticker = event.target.files[0];
-      setOriginalSticker(newSticker);
-      const stickerWithNoBg = await removeBackground(newSticker);
+      setSticker(newSticker);
+      onStickerChange(newSticker, size);
       setLoading(false);
-
-      if (stickerWithNoBg) {
-        setSticker(stickerWithNoBg);
-        onStickerChange(stickerWithNoBg, size);
-      }
     }
   };
 
@@ -66,23 +36,7 @@ const UploadSticker: React.FC<UploadStickerProps> = ({ onStickerChange }) => {
 
   const handleRemoveSticker = () => {
     setSticker(null);
-    setOriginalSticker(null);
     onStickerChange(null, size); // Réinitialiser le sticker à null
-  };
-
-  const toggleRemoveBg = () => {
-    if (removeBg && originalSticker) {
-      setSticker(originalSticker);
-      onStickerChange(originalSticker, size);
-    } else if (!removeBg && originalSticker) {
-      removeBackground(originalSticker).then((stickerWithNoBg) => {
-        if (stickerWithNoBg) {
-          setSticker(stickerWithNoBg);
-          onStickerChange(stickerWithNoBg, size);
-        }
-      });
-    }
-    setRemoveBg(!removeBg);
   };
 
   return (
@@ -155,14 +109,6 @@ const UploadSticker: React.FC<UploadStickerProps> = ({ onStickerChange }) => {
             >
               Remplacer
             </label>
-            <button
-              className="bg-green-500 text-white py-2 px-4 rounded-md"
-              onClick={toggleRemoveBg}
-            >
-              {removeBg
-                ? "Restaurer l'arrière-plan"
-                : "Supprimer l'arrière-plan"}
-            </button>
           </div>
           <input
             id="sticker-upload"

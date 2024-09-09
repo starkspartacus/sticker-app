@@ -24,6 +24,22 @@ const PositionSticker: React.FC<PositionStickerProps> = ({
   const [sticker, setSticker] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [size, setSize] = useState<number>(100); // Default size for sticker
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+  const [toastId, setToastId] = useState<string | number | null>(null);
+
+  useEffect(() => {
+    // Restore position and size from localStorage
+    const savedPosition = localStorage.getItem("stickerPosition");
+    const savedSize = localStorage.getItem("stickerSize");
+
+    if (savedPosition) {
+      setPosition(JSON.parse(savedPosition));
+    }
+
+    if (savedSize) {
+      setSize(parseInt(savedSize, 10));
+    }
+  }, []);
 
   useEffect(() => {
     console.log("Position actuelle:", position);
@@ -65,6 +81,30 @@ const PositionSticker: React.FC<PositionStickerProps> = ({
     const newSize = parseInt(event.target.value, 10);
     setSize(newSize);
     onSizeChange(newSize);
+    localStorage.setItem("stickerSize", newSize.toString());
+
+    if (toastId === null) {
+      const id = toast.info(`Taille du sticker: ${newSize}%`, {
+        position: "top-center",
+        autoClose: false,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+      });
+      setToastId(id);
+    } else {
+      toast.update(toastId, {
+        render: `Taille du sticker: ${newSize}%`,
+        autoClose: false,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+      });
+    }
   };
 
   const handlePositionChange = (axis: "x" | "y", value: number) => {
@@ -74,11 +114,20 @@ const PositionSticker: React.FC<PositionStickerProps> = ({
     };
     setPosition(newPosition);
     onPositionChange(newPosition);
+    localStorage.setItem("stickerPosition", JSON.stringify(newPosition));
   };
 
   const constrainedPosition = {
-    x: Math.min(Math.max(position.x, size / 6 / 3.2), 100 - size / 2 / 3.2),
-    y: Math.min(Math.max(position.y, size / 2 / 3.2), 100 - size / 2 / 3.2),
+    x: Math.min(Math.max(position.x, 0), 100),
+    y: Math.min(Math.max(position.y, 0), 100),
+  };
+
+  const openModal = () => {
+    setIsModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setIsModalOpen(false);
   };
 
   return (
@@ -92,7 +141,6 @@ const PositionSticker: React.FC<PositionStickerProps> = ({
             style={{
               left: `${constrainedPosition.x}%`,
               top: `${constrainedPosition.y}%`,
-              right: `${constrainedPosition.x}`,
               transform: "translate(-50%, -50%)",
             }}
           >
@@ -102,7 +150,7 @@ const PositionSticker: React.FC<PositionStickerProps> = ({
               width={size}
               height={size}
               priority={true}
-              className="sticker-image" // Ajoutez une classe CSS personnalisée si nécessaire
+              className="sticker-image"
             />
           </div>
         </div>
@@ -140,13 +188,43 @@ const PositionSticker: React.FC<PositionStickerProps> = ({
         <label className="text-gray-700 mt-4">Taille du Sticker</label>
         <input
           type="range"
-          min="10"
+          min="1"
           max="200"
           value={size}
           onChange={handleSizeChange}
           className="mt-2 range-input"
         />
       </div>
+
+      {isModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
+          <div className="relative bg-white p-4 rounded-md">
+            <button
+              className="absolute top-2 right-2 bg-red-500 text-white p-2 rounded-full"
+              onClick={closeModal}
+            >
+              Close
+            </button>
+            <div className="relative w-full h-full">
+              <Image
+                src={previewUrl || ""}
+                alt="Modal Preview"
+                layout="fill"
+                objectFit="contain"
+                className="max-w-full max-h-full"
+                style={{
+                  position: "absolute",
+                  left: `${constrainedPosition.x}%`,
+                  top: `${constrainedPosition.y}%`,
+                  transform: "translate(-50%, -50%)",
+                  width: `${size}%`,
+                  height: `${size}%`,
+                }}
+              />
+            </div>
+          </div>
+        </div>
+      )}
 
       <ToastContainer />
     </div>

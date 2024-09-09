@@ -70,8 +70,8 @@ const ButtonAddStickerOnFiles: React.FC<ButtonAddStickerOnFilesProps> = ({
                 (stickerSize / 100) * Math.min(img.width, img.height);
               ctx.drawImage(
                 stickerImage,
-                stickerX,
-                stickerY,
+                stickerX - scaledStickerSize / 2,
+                stickerY - scaledStickerSize / 2,
                 scaledStickerSize,
                 scaledStickerSize
               );
