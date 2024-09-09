@@ -23,21 +23,25 @@ const NavigationMenuComponent: React.FC = () => {
     <header className="bg-white shadow-md w-full static">
       <div className="container mx-auto px-4 py-4 flex justify-between items-center">
         <div className="flex items-center justify-start">
-          <Image
-            src="/logo/logo_stikker.png"
+          <Link href="/">
+            <Image
+              src="/logo/logo_stikker.png"
             alt="Logo"
             className=""
             width={150}
-            height={150}
-          />
+              height={150}
+            />
+          </Link>
           <span className="">
-            <Image
-              src="/logo/logo_app.png"
+            <Link href="/">
+              <Image
+                src="/logo/logo_app.png"
               alt="Logo"
               className=""
               width={120}
               height={99}
             />
+          </Link>
           </span>
         </div>
         <nav className="hidden md:flex space-x-4 w-full justify-center">
@@ -46,21 +50,21 @@ const NavigationMenuComponent: React.FC = () => {
               <NavigationMenuItem>
                 <Link href="/" legacyBehavior passHref>
                   <NavigationMenuLink className={navigationMenuTriggerStyle()}>
-                    Home
+                    Accueil
                   </NavigationMenuLink>
                 </Link>
               </NavigationMenuItem>
               <NavigationMenuItem>
                 <Link href="/about" legacyBehavior passHref>
                   <NavigationMenuLink className={navigationMenuTriggerStyle()}>
-                    About
+                    A propos
                   </NavigationMenuLink>
                 </Link>
               </NavigationMenuItem>
               <NavigationMenuItem>
                 <Link href="/prix" legacyBehavior passHref>
                   <NavigationMenuLink className={navigationMenuTriggerStyle()}>
-                    Prix
+                    Tarifs
                   </NavigationMenuLink>
                 </Link>
               </NavigationMenuItem>
@@ -93,19 +97,19 @@ const NavigationMenuComponent: React.FC = () => {
         <div className="md:hidden">
           <nav className="px-2 pt-2 pb-4 space-y-1">
             <Link href="/" className="block text-gray-700 hover:text-gray-900">
-              Home
+              Accueil
             </Link>
             <Link
               href="/about"
               className="block text-gray-700 hover:text-gray-900"
             >
-              About
+              A propos
             </Link>
             <Link
-              href="/contact"
+              href="/prix"
               className="block text-gray-700 hover:text-gray-900"
             >
-              Contact
+              Tarifs
             </Link>
           </nav>
         </div>
