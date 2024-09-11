@@ -43,8 +43,8 @@ const PositionSticker: React.FC<PositionStickerProps> = ({
 
   useEffect(() => {
     console.log("Position actuelle:", position);
-    if (position.x > 90 || position.y > 90) {
-      toast.warn(
+    if ((position.x > 90 || position.y > 90) && toastId === null) {
+      const id = toast.warn(
         "Attention, le sticker ne sera pas visible sur votre image. Merci de rester dans la limite.",
         {
           position: "top-center",
@@ -56,8 +56,22 @@ const PositionSticker: React.FC<PositionStickerProps> = ({
           progress: undefined,
         }
       );
+      setToastId(id);
+    } else if (position.x <= 90 && position.y <= 90 && toastId !== null) {
+      toast.dismiss(toastId);
+      setToastId(null);
+    } else if (toastId !== null) {
+      toast.update(toastId, {
+        render: "Position dans les limites recommandées.",
+        autoClose: false,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+      });
     }
-  }, [position]);
+  }, [position, toastId]);
 
   useEffect(() => {
     if (sticker) {

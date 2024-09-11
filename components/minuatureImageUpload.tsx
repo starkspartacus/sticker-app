@@ -14,6 +14,9 @@ const MiniatureImageUpload: React.FC<MiniatureImageUploadProps> = ({
   const [thumbnails, setThumbnails] = useState<string[]>([]);
   const [modalIsOpen, setModalIsOpen] = useState(false);
   const [selectedFile, setSelectedFile] = useState<string | null>(null);
+  const [insertedStickerIndex, setInsertedStickerIndex] = useState<
+    number | null
+  >(null);
 
   useEffect(() => {
     const newThumbnails: string[] = [];
@@ -37,6 +40,12 @@ const MiniatureImageUpload: React.FC<MiniatureImageUploadProps> = ({
   const closeModal = () => {
     setModalIsOpen(false);
     setSelectedFile(null);
+  };
+
+  const insertSticker = (index: number) => {
+    setInsertedStickerIndex(index);
+    // Add logic to insert sticker on the selected file
+    // You can add animation classes here to gray out the thumbnail
   };
 
   return (
