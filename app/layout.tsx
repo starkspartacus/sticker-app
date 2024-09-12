@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import NavigationMenu from "@/components/NavigationMenu";
+import { Toaster } from "@/components/ui/toaster";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -17,6 +18,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head />
       <body className={inter.className}>
         <main>
           <div className="flex justify-center items-center p-4">
@@ -24,6 +26,7 @@ export default function RootLayout({
           </div>
           {children}
         </main>
+        <Toaster />
       </body>
     </html>
   );

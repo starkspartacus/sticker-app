@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
@@ -39,8 +39,30 @@ const UploadSticker: React.FC<UploadStickerProps> = ({ onStickerChange }) => {
     onStickerChange(null, size); // Réinitialiser le sticker à null
   };
 
+  const handleDrop = useCallback(
+    (event: React.DragEvent<HTMLDivElement>) => {
+      event.preventDefault();
+      if (event.dataTransfer.files && event.dataTransfer.files[0]) {
+        setLoading(true);
+        const newSticker = event.dataTransfer.files[0];
+        setSticker(newSticker);
+        onStickerChange(newSticker, size);
+        setLoading(false);
+      }
+    },
+    [onStickerChange, size]
+  );
+
+  const handleDragOver = (event: React.DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+  };
+
   return (
-    <div className="flex flex-col items-center justify-center p-4">
+    <div
+      className="flex flex-col items-center justify-center p-4"
+      onDrop={handleDrop}
+      onDragOver={handleDragOver}
+    >
       <div
         className="relative w-full max-w-lg p-6 border rounded-md shadow-md"
         style={{ height: "377px", overflow: "hidden", width: "377px" }}
@@ -52,7 +74,7 @@ const UploadSticker: React.FC<UploadStickerProps> = ({ onStickerChange }) => {
               htmlFor="sticker-upload"
               className="cursor-pointer bg-blue-500 text-white py-2 px-4 rounded-md mb-4"
             >
-              Télécharge un sticker
+              Télécharge un sticker ou glisse-le ici
             </label>
             <input
               id="sticker-upload"

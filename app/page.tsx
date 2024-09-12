@@ -20,8 +20,9 @@ export default function Home() {
     x: 50,
     y: 50,
   });
-  const [stickerSize, setStickerSize] = useState<number>(100);
+  const [stickerSize, setStickerSize] = useState<number>(100); // Size in pixels
   const [showPreview, setShowPreview] = useState<boolean>(false);
+  const [isToggled, setIsToggled] = useState(false);
 
   const handleStickerChange = (file: File | null, size: number) => {
     if (file) {
@@ -36,14 +37,22 @@ export default function Home() {
     setFiles(newFiles);
   };
 
+  const handleToggle = () => {
+    setIsToggled(!isToggled);
+  };
+
   return (
     <>
+      {/* <h1 className="text-3xl font-bold text-center text-gray-900 mb-4">
+        Welcome to App Sticker
+      </h1>
+      <div className="card p-4 border rounded-md shadow-md mb-4">
+        <button onClick={handleToggle} className="btn btn-primary">
+          Toggle
+        </button>
+        {isToggled && <p>The toggle is ON</p>}
+      </div> */}
       <div className="p-4">
-        <h1 className="text-3xl font-bold text-center text-gray-900 mb-4">
-          Welcome to App Sticker
-        </h1>
-        <div className="card p-4 border rounded-md shadow-md mb-4"></div>
-
         <div className="flex flex-col md:flex-row justify-around items-start gap-4 w-full">
           <motion.div
             className="flex-1"

@@ -2,9 +2,8 @@
 
 import Image from "next/image";
 import React, { useEffect, useState } from "react";
-import { ToastContainer, toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
 import UploadSticker from "./UploadSticker";
+import { useToast } from "@/hooks/use-toast";
 
 interface PositionStickerProps {
   onStickerChange: (sticker: File | null) => void;
@@ -23,9 +22,10 @@ const PositionSticker: React.FC<PositionStickerProps> = ({
   });
   const [sticker, setSticker] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  const [size, setSize] = useState<number>(100); // Default size for sticker
+  const [size, setSize] = useState<number>(100); // Default size for sticker in pixels
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
-  const [toastId, setToastId] = useState<string | number | null>(null);
+  const [toastId, setToastId] = useState<string | null>(null);
+  const { toast } = useToast();
 
   useEffect(() => {
     // Restore position and size from localStorage
@@ -43,35 +43,28 @@ const PositionSticker: React.FC<PositionStickerProps> = ({
 
   useEffect(() => {
     console.log("Position actuelle:", position);
+
     if ((position.x > 90 || position.y > 90) && toastId === null) {
-      const id = toast.warn(
-        "Attention, le sticker ne sera pas visible sur votre image. Merci de rester dans la limite.",
-        {
-          position: "top-center",
-          autoClose: 5000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined,
-        }
-      );
+      const id = toast({
+        title: "Attention",
+        description:
+          "Le sticker ne sera pas visible sur votre image. Merci de rester dans la limite.",
+        variant: "warning",
+      }).id;
       setToastId(id);
     } else if (position.x <= 90 && position.y <= 90 && toastId !== null) {
-      toast.dismiss(toastId);
+      toast({
+        title: "Position",
+        description: "Position dans les limites recommandées.",
+      });
       setToastId(null);
     } else if (toastId !== null) {
-      toast.update(toastId, {
-        render: "Position dans les limites recommandées.",
-        autoClose: false,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
+      toast({
+        title: "Position",
+        description: "Position dans les limites recommandées.",
       });
     }
-  }, [position, toastId]);
+  }, [position, toastId, toast]);
 
   useEffect(() => {
     if (sticker) {
@@ -98,25 +91,16 @@ const PositionSticker: React.FC<PositionStickerProps> = ({
     localStorage.setItem("stickerSize", newSize.toString());
 
     if (toastId === null) {
-      const id = toast.info(`Taille du sticker: ${newSize}%`, {
-        position: "top-center",
-        autoClose: false,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-      });
+      const id = toast({
+        title: "Taille du sticker",
+        description: `Taille du sticker: ${newSize}px`,
+        variant: "info",
+      }).id;
       setToastId(id);
     } else {
-      toast.update(toastId, {
-        render: `Taille du sticker: ${newSize}%`,
-        autoClose: false,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
+      toast({
+        title: "Taille du sticker",
+        description: `Taille du sticker: ${newSize}px`,
       });
     }
   };
@@ -199,11 +183,11 @@ const PositionSticker: React.FC<PositionStickerProps> = ({
           onChange={(e) => handlePositionChange("y", parseInt(e.target.value))}
           className="mt-2 range-input"
         />
-        <label className="text-gray-700 mt-4">Taille du Sticker</label>
+        <label className="text-gray-700 mt-4">Taille du Sticker (px)</label>
         <input
           type="range"
           min="1"
-          max="200"
+          max="500"
           value={size}
           onChange={handleSizeChange}
           className="mt-2 range-input"
@@ -231,16 +215,14 @@ const PositionSticker: React.FC<PositionStickerProps> = ({
                   left: `${constrainedPosition.x}%`,
                   top: `${constrainedPosition.y}%`,
                   transform: "translate(-50%, -50%)",
-                  width: `${size}%`,
-                  height: `${size}%`,
+                  width: `${size}px`,
+                  height: `${size}px`,
                 }}
               />
             </div>
           </div>
         </div>
       )}
-
-      <ToastContainer />
     </div>
   );
 };
