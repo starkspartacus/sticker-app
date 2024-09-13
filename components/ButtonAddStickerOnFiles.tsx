@@ -6,7 +6,7 @@ import Confetti from "react-confetti";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useToast } from "@/hooks/use-toast";
-import Worker from "@/lib/worker-loader!./video-worker";
+
 
 interface ButtonAddStickerOnFilesProps {
   files: File[];
