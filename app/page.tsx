@@ -23,6 +23,7 @@ export default function Home() {
   const [stickerSize, setStickerSize] = useState<number>(100); // Size in pixels
   const [showPreview, setShowPreview] = useState<boolean>(false);
   const [isToggled, setIsToggled] = useState(false);
+  const [processedFiles, setProcessedFiles] = useState<Set<string>>(new Set());
 
   const handleStickerChange = (file: File | null, size: number) => {
     if (file) {
@@ -67,11 +68,6 @@ export default function Home() {
           </motion.div>
           <motion.div
             className="flex-1 overflow-x-auto overflow-y-auto scrollbar-hide grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4"
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{
-              opacity: files.length > 0 ? 1 : 0,
-              scale: files.length > 0 ? 1 : 0.8,
-            }}
             transition={{ duration: 0.5 }}
             style={{ maxHeight: "400px" }} // Ajout de la hauteur maximale
           >
@@ -83,7 +79,10 @@ export default function Home() {
                 animate={{ scale: 1 }}
                 transition={{ duration: 0.5 }}
               >
-                <MiniatureImageUpload files={[file]} />
+                <MiniatureImageUpload
+                  files={[file]}
+                  processedFiles={processedFiles}
+                />
               </motion.div>
             ))}
           </motion.div>

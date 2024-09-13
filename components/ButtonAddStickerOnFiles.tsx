@@ -7,6 +7,7 @@ import ShinyButton from "./magicui/shiny-button";
 import Confetti from "react-confetti";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { useToast } from "@/hooks/use-toast";
 
 interface ButtonAddStickerOnFilesProps {
   files: File[];
@@ -26,6 +27,8 @@ const ButtonAddStickerOnFiles: React.FC<ButtonAddStickerOnFilesProps> = ({
   const [showConfetti, setShowConfetti] = useState(false);
   const [windowSize, setWindowSize] = useState({ width: 0, height: 0 });
   const [error, setError] = useState<string | null>(null);
+  const [processedFiles, setProcessedFiles] = useState<Set<string>>(new Set());
+  const { toast } = useToast();
 
   useEffect(() => {
     const handleResize = () => {
@@ -79,6 +82,7 @@ const ButtonAddStickerOnFiles: React.FC<ButtonAddStickerOnFilesProps> = ({
               canvas.toBlob((blob) => {
                 if (blob) {
                   zip.file(file.name, blob);
+                  setProcessedFiles((prev) => new Set(prev).add(file.name));
                   resolve();
                 } else {
                   reject(new Error("Failed to process image"));
@@ -137,7 +141,11 @@ const ButtonAddStickerOnFiles: React.FC<ButtonAddStickerOnFilesProps> = ({
           saveAs(content, "files_with_stickers.zip");
           setIsProcessing(false);
           setShowConfetti(true);
-          toast.success("Téléchargement terminé !");
+          toast({
+            title: "Succès",
+            description: "Téléchargement terminé !",
+            variant: "success",
+          });
           setTimeout(() => {
             setShowConfetti(false);
             window.location.reload(); // Reset the page
@@ -152,7 +160,12 @@ const ButtonAddStickerOnFiles: React.FC<ButtonAddStickerOnFilesProps> = ({
       console.error("Error processing files:", error);
       setIsProcessing(false);
       setError("Une erreur s'est produite lors du traitement des fichiers.");
-      toast.error("Une erreur s'est produite lors du traitement des fichiers.");
+      toast({
+        title: "Erreur",
+        description:
+          "Une erreur s'est produite lors du traitement des fichiers.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -187,7 +200,6 @@ const ButtonAddStickerOnFiles: React.FC<ButtonAddStickerOnFilesProps> = ({
       {showConfetti && (
         <Confetti width={windowSize.width} height={windowSize.height} />
       )}
-      <ToastContainer />
     </div>
   );
 };

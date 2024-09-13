@@ -6,17 +6,16 @@ import Modal from "react-modal";
 
 interface MiniatureImageUploadProps {
   files: File[];
+  processedFiles: Set<string>;
 }
 
 const MiniatureImageUpload: React.FC<MiniatureImageUploadProps> = ({
   files,
+  processedFiles,
 }) => {
   const [thumbnails, setThumbnails] = useState<string[]>([]);
   const [modalIsOpen, setModalIsOpen] = useState(false);
   const [selectedFile, setSelectedFile] = useState<string | null>(null);
-  const [insertedStickerIndex, setInsertedStickerIndex] = useState<
-    number | null
-  >(null);
 
   useEffect(() => {
     const newThumbnails: string[] = [];
@@ -42,12 +41,6 @@ const MiniatureImageUpload: React.FC<MiniatureImageUploadProps> = ({
     setSelectedFile(null);
   };
 
-  const insertSticker = (index: number) => {
-    setInsertedStickerIndex(index);
-    // Add logic to insert sticker on the selected file
-    // You can add animation classes here to gray out the thumbnail
-  };
-
   return (
     <div>
       <div className="flex flex-wrap gap-4 mt-4">
@@ -55,6 +48,7 @@ const MiniatureImageUpload: React.FC<MiniatureImageUploadProps> = ({
           const file = files[index];
           if (!file) return null; // Skip if file is undefined
           const isVideo = file.type.startsWith("video/");
+          const isProcessed = processedFiles.has(file.name);
           return (
             <div
               key={index}
@@ -85,6 +79,11 @@ const MiniatureImageUpload: React.FC<MiniatureImageUploadProps> = ({
                   layout="fill"
                   objectFit="cover"
                 />
+              )}
+              {isProcessed && (
+                <div className="absolute top-0 right-0 bg-green-500 text-white p-1 rounded-full">
+                  ✓
+                </div>
               )}
             </div>
           );
