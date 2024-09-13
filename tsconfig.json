@@ -22,13 +22,12 @@
     }
   },
   "include": [
-    "src",
-    "worker-loader.d.ts",
     "next-env.d.ts",
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts",
-    ".js"
+    ".js",
+    "lib/videoJs.js"
   ],
   "exclude": ["node_modules"]
 }

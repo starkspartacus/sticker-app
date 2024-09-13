@@ -7,6 +7,8 @@ import ShinyButton from "./magicui/shiny-button";
 import Confetti from "react-confetti";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import videojs from "video.js";
+import "video.js/dist/video-js.css";
 
 interface ButtonAddStickerOnFilesProps {
   files: File[];
@@ -48,50 +50,117 @@ const ButtonAddStickerOnFiles: React.FC<ButtonAddStickerOnFilesProps> = ({
 
       fileReader.onload = async (e) => {
         try {
-          const imageBuffer = e.target?.result as string;
-          const img = new Image();
-          img.src = imageBuffer;
+          const fileType = file.type.split("/")[0];
+          if (fileType === "image") {
+            // Process image
+            const imageBuffer = e.target?.result as string;
+            const img = new Image();
+            img.src = imageBuffer;
 
-          img.onload = () => {
-            const canvas = document.createElement("canvas");
-            const ctx = canvas.getContext("2d");
+            img.onload = () => {
+              const canvas = document.createElement("canvas");
+              const ctx = canvas.getContext("2d");
 
-            if (ctx) {
-              canvas.width = img.width;
-              canvas.height = img.height;
+              if (ctx) {
+                canvas.width = img.width;
+                canvas.height = img.height;
 
-              // Draw the original image
-              ctx.drawImage(img, 0, 0);
+                // Draw the original image
+                ctx.drawImage(img, 0, 0);
 
-              // Draw the sticker with dynamic size
-              const stickerX = (stickerPosition.x / 100) * img.width;
-              const stickerY = (stickerPosition.y / 100) * img.height;
-              const scaledStickerSize =
-                (stickerSize / 100) * Math.min(img.width, img.height);
-              ctx.drawImage(
-                stickerImage,
-                stickerX - scaledStickerSize / 2,
-                stickerY - scaledStickerSize / 2,
-                scaledStickerSize,
-                scaledStickerSize
-              );
+                // Draw the sticker with dynamic size
+                const stickerX = (stickerPosition.x / 100) * img.width;
+                const stickerY = (stickerPosition.y / 100) * img.height;
+                const scaledStickerSize =
+                  (stickerSize / 100) * Math.min(img.width, img.height);
+                ctx.drawImage(
+                  stickerImage,
+                  stickerX - scaledStickerSize / 2,
+                  stickerY - scaledStickerSize / 2,
+                  scaledStickerSize,
+                  scaledStickerSize
+                );
 
-              canvas.toBlob((blob) => {
-                if (blob) {
-                  zip.file(file.name, blob);
-                  resolve();
+                canvas.toBlob((blob) => {
+                  if (blob) {
+                    zip.file(file.name, blob);
+                    resolve();
+                  } else {
+                    reject(new Error("Failed to process image"));
+                  }
+                });
+              } else {
+                reject(new Error("Failed to get canvas context"));
+              }
+            };
+
+            img.onerror = () => {
+              reject(new Error("Failed to load image"));
+            };
+          } else if (fileType === "video") {
+            // Process video
+            const videoElement = document.createElement("video");
+            videoElement.src = e.target?.result as string;
+
+            videoElement.onloadedmetadata = () => {
+              const player = videojs(videoElement, {
+                controls: false,
+                autoplay: false,
+                preload: "auto",
+              });
+
+              player.on("loadeddata", () => {
+                const canvas = document.createElement("canvas");
+                const ctx = canvas.getContext("2d");
+
+                if (ctx) {
+                  canvas.width = player.videoWidth();
+                  canvas.height = player.videoHeight();
+
+                  // Draw the video frame
+                  const videoEl = player
+                    .el()
+                    .querySelector("video") as HTMLVideoElement;
+                  if (videoEl) {
+                    ctx.drawImage(videoEl, 0, 0, canvas.width, canvas.height);
+
+                    // Draw the sticker with dynamic size
+                    const stickerX = (stickerPosition.x / 100) * canvas.width;
+                    const stickerY = (stickerPosition.y / 100) * canvas.height;
+                    const scaledStickerSize =
+                      (stickerSize / 100) *
+                      Math.min(canvas.width, canvas.height);
+                    ctx.drawImage(
+                      stickerImage,
+                      stickerX - scaledStickerSize / 2,
+                      stickerY - scaledStickerSize / 2,
+                      scaledStickerSize,
+                      scaledStickerSize
+                    );
+
+                    canvas.toBlob((blob) => {
+                      if (blob) {
+                        zip.file(file.name, blob);
+                        resolve();
+                      } else {
+                        reject(new Error("Failed to process video"));
+                      }
+                    });
+                  } else {
+                    reject(new Error("Failed to get video element"));
+                  }
                 } else {
-                  reject(new Error("Failed to process image"));
+                  reject(new Error("Failed to get canvas context"));
                 }
               });
-            } else {
-              reject(new Error("Failed to get canvas context"));
-            }
-          };
+            };
 
-          img.onerror = () => {
-            reject(new Error("Failed to load image"));
-          };
+            videoElement.onerror = () => {
+              reject(new Error("Failed to load video"));
+            };
+          } else {
+            reject(new Error("Unsupported file type"));
+          }
         } catch (err) {
           reject(err);
         }
