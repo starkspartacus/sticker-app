@@ -156,12 +156,16 @@ const ButtonAddStickerOnFiles: React.FC<ButtonAddStickerOnFilesProps> = ({
             };
 
             videoElement.onerror = () => {
+              setError("Failed to load video");
+              toast.error("Failed to load video");
               reject(new Error("Failed to load video"));
             };
           } else {
             reject(new Error("Unsupported file type"));
           }
         } catch (err) {
+          setError("An error occurred while processing the file.");
+          toast.error("An error occurred while processing the file.");
           reject(err);
         }
       };
@@ -198,7 +202,19 @@ const ButtonAddStickerOnFiles: React.FC<ButtonAddStickerOnFilesProps> = ({
         const batchSize = 1; // Process 1 file at a time to reduce memory usage
         for (let i = 0; i < files.length; i += batchSize) {
           const batch = files.slice(i, i + batchSize);
-          await processBatch(batch, zip, stickerImage, i);
+          try {
+            await processBatch(batch, zip, stickerImage, i);
+          } catch (error) {
+            console.error("Error processing batch:", error);
+            setError(
+              "Une erreur s'est produite lors du traitement des fichiers."
+            );
+            toast.error(
+              "Une erreur s'est produite lors du traitement des fichiers."
+            );
+            setIsProcessing(false);
+            return;
+          }
         }
 
         // Quand tous les fichiers sont prêts, générer le zip
@@ -215,7 +231,9 @@ const ButtonAddStickerOnFiles: React.FC<ButtonAddStickerOnFilesProps> = ({
       };
 
       stickerImage.onerror = () => {
-        throw new Error("Failed to load sticker image");
+        setError("Failed to load sticker image");
+        toast.error("Failed to load sticker image");
+        setIsProcessing(false);
       };
     } catch (error) {
       console.error("Error processing files:", error);
