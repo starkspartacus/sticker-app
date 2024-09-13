@@ -1,3 +1,5 @@
+"use client";
+
 import { saveAs } from "file-saver";
 import JSZip from "jszip";
 import React, { useState, useEffect } from "react";
@@ -5,8 +7,6 @@ import ShinyButton from "./magicui/shiny-button";
 import Confetti from "react-confetti";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { useToast } from "@/hooks/use-toast";
-import Worker from "@/lib/worker-loader!./video-worker";
 
 interface ButtonAddStickerOnFilesProps {
   files: File[];
@@ -26,8 +26,6 @@ const ButtonAddStickerOnFiles: React.FC<ButtonAddStickerOnFilesProps> = ({
   const [showConfetti, setShowConfetti] = useState(false);
   const [windowSize, setWindowSize] = useState({ width: 0, height: 0 });
   const [error, setError] = useState<string | null>(null);
-  const [processedFiles, setProcessedFiles] = useState<Set<string>>(new Set());
-  const { toast } = useToast();
 
   useEffect(() => {
     const handleResize = () => {
@@ -81,7 +79,6 @@ const ButtonAddStickerOnFiles: React.FC<ButtonAddStickerOnFilesProps> = ({
               canvas.toBlob((blob) => {
                 if (blob) {
                   zip.file(file.name, blob);
-                  setProcessedFiles((prev) => new Set(prev).add(file.name));
                   resolve();
                 } else {
                   reject(new Error("Failed to process image"));
@@ -135,43 +132,27 @@ const ButtonAddStickerOnFiles: React.FC<ButtonAddStickerOnFilesProps> = ({
           await processBatch(batch, zip, stickerImage, i);
         }
 
-        // Use a Web Worker to process the video
-        const videoWorker = new Worker();
-        videoWorker.postMessage({ files, stickerImage, zip });
-
-        videoWorker.onmessage = (event) => {
-          if (event.data.type === 'progress') {
-            setProgress(event.data.progress);
-          } else if (event.data.type === 'complete') {
-            const videoBlob = event.data.videoBlob;
-            zip.file('video.mp4', videoBlob);
-            setIsProcessing(false);
-            setShowConfetti(true);
-            toast({
-              title: 'Succès',
-              description: 'Téléchargement terminé !',
-              variant: 'success',
-            });
-            setTimeout(() => {
-              setShowConfetti(false);
-              window.location.reload(); // Reset the page
-            }, 5000); // Afficher les confettis pendant 5 secondes
-          }
-        };
+        // Quand tous les fichiers sont prêts, générer le zip
+        zip.generateAsync({ type: "blob" }).then((content: Blob) => {
+          saveAs(content, "files_with_stickers.zip");
+          setIsProcessing(false);
+          setShowConfetti(true);
+          toast.success("Téléchargement terminé !");
+          setTimeout(() => {
+            setShowConfetti(false);
+            window.location.reload(); // Reset the page
+          }, 5000); // Afficher les confettis pendant 5 secondes
+        });
       };
 
       stickerImage.onerror = () => {
-        throw new Error('Failed to load sticker image');
+        throw new Error("Failed to load sticker image");
       };
     } catch (error) {
-      console.error('Error processing files:', error);
+      console.error("Error processing files:", error);
       setIsProcessing(false);
       setError("Une erreur s'est produite lors du traitement des fichiers.");
-      toast({
-        title: 'Erreur',
-        description: 'Une erreur s'est produite lors du traitement des fichiers.',
-        variant: 'destructive',
-      });
+      toast.error("Une erreur s'est produite lors du traitement des fichiers.");
     }
   };
 
@@ -204,8 +185,9 @@ const ButtonAddStickerOnFiles: React.FC<ButtonAddStickerOnFilesProps> = ({
         </button>
       )}
       {showConfetti && (
-        <Confetti width={windowSize.width } height={windowSize.height} />
+        <Confetti width={windowSize.width} height={windowSize.height} />
       )}
+      <ToastContainer />
     </div>
   );
 };
