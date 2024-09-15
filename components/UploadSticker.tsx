@@ -104,7 +104,7 @@ const UploadSticker: React.FC<UploadStickerProps> = ({ onStickerChange }) => {
       {sticker && (
         <div className="flex flex-col items-center mt-4">
           {/* Contrôle de la taille du sticker */}
-          <label htmlFor="size-slider" className="mb-2">
+          {/* <label htmlFor="size-slider" className="mb-2">
             Taille du sticker: {size}px
           </label>
           <input
@@ -115,7 +115,7 @@ const UploadSticker: React.FC<UploadStickerProps> = ({ onStickerChange }) => {
             value={size}
             onChange={handleSizeChange}
             className="mb-4"
-          />
+          /> */}
 
           {/* Boutons pour supprimer et remplacer le sticker */}
           <div className="flex space-x-2">

@@ -4,6 +4,7 @@ import Image from "next/image";
 import React, { useEffect, useState } from "react";
 import UploadSticker from "./UploadSticker";
 import { useToast } from "@/hooks/use-toast";
+import { useTheme } from "next-themes"; // Assurez-vous d'avoir un hook pour détecter le thème
 
 interface PositionStickerProps {
   onStickerChange: (sticker: File | null) => void;
@@ -16,6 +17,7 @@ const PositionSticker: React.FC<PositionStickerProps> = ({
   onPositionChange,
   onSizeChange,
 }) => {
+  const { theme } = useTheme(); // Utilisez le hook pour obtenir le thème actuel
   const [position, setPosition] = useState<{ x: number; y: number }>({
     x: 50,
     y: 50,
@@ -129,11 +131,15 @@ const PositionSticker: React.FC<PositionStickerProps> = ({
   };
 
   return (
-    <div className="flex flex-col items-center justify-center p-4 border rounded-md shadow-md bg-white">
+    <div className="flex flex-col items-center justify-center p-4 border rounded-md shadow-md ">
       <UploadSticker onStickerChange={handleStickerChange} />
 
       {previewUrl ? (
-        <div className="relative mt-4 mb-4 w-full h-64 border rounded-md overflow-hidden bg-gray-200 flex items-center justify-center">
+        <div
+          className={`relative mt-4 mb-4 w-full h-64 border rounded-md overflow-hidden ${
+            theme === "light" ? "bg-gray-200" : ""
+          } flex items-center justify-center`}
+        >
           <div
             className="absolute"
             style={{
@@ -153,19 +159,25 @@ const PositionSticker: React.FC<PositionStickerProps> = ({
           </div>
         </div>
       ) : (
-        <div className="mt-4 mb-4 w-1/2 md:w-full h-96 border rounded-md overflow-hidden bg-gray-200 flex items-center justify-center">
-          <p className="text-gray-500">
+        <div
+          className={`mt-4 mb-4 w-1/2 md:w-full h-96 border rounded-md overflow-hidden ${
+            theme === "light" ? "bg-gray-200" : ""
+          } flex items-center justify-center`}
+        >
+          <p className="dark:text-white text-gray-700">
             Aucun autocollant n&lsquo;a été téléchargé. Veuillez en télécharger
           </p>
         </div>
       )}
 
-      <label className="mb-2 mt-4 font-semibold text-gray-700">
+      <label className="mb-2 mt-4 font-semibold text-gray-700 dark:text-white">
         Position du Sticker
       </label>
 
       <div className="flex flex-col mt-4 md:w-full">
-        <label className="text-gray-700">Position horizontale (X)</label>
+        <label className="text-gray-700 dark:text-white">
+          Position horizontale (X)
+        </label>
         <input
           type="range"
           min="0"
@@ -174,7 +186,9 @@ const PositionSticker: React.FC<PositionStickerProps> = ({
           onChange={(e) => handlePositionChange("x", parseInt(e.target.value))}
           className="mt-2 range-input"
         />
-        <label className="text-gray-700 mt-4">Position verticale (Y)</label>
+        <label className="text-gray-700 mt-4 dark:text-white">
+          Position verticale (Y)
+        </label>
         <input
           type="range"
           min="0"
@@ -183,7 +197,9 @@ const PositionSticker: React.FC<PositionStickerProps> = ({
           onChange={(e) => handlePositionChange("y", parseInt(e.target.value))}
           className="mt-2 range-input"
         />
-        <label className="text-gray-700 mt-4">Taille du Sticker (px)</label>
+        <label className="text-gray-700 mt-4 dark:text-white">
+          Taille du Sticker (px)
+        </label>
         <input
           type="range"
           min="1"

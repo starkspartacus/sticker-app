@@ -81,7 +81,7 @@ const UploadPictureAndVideo: React.FC<UploadPictureAndVideoProps> = ({
               ) : (
                 <div className="flex flex-col items-center">
                   <FiUploadCloud className="text-6xl" />
-                  <p>Click or drag and drop files here</p>
+                  <p>Click or drag and drop files here Max 50</p>
                 </div>
               )}
             </div>

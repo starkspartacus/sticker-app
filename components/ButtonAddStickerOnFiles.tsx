@@ -10,6 +10,7 @@ import "react-toastify/dist/ReactToastify.css";
 import { FFmpeg } from "@ffmpeg/ffmpeg";
 import { fetchFile } from "@ffmpeg/util";
 import { Buffer } from "buffer";
+import bytesToSize from "@/utils/bytes-to-size"; // Importer la fonction
 
 interface ButtonAddStickerOnFilesProps {
   files: File[];
@@ -109,17 +110,27 @@ const ButtonAddStickerOnFiles: React.FC<ButtonAddStickerOnFilesProps> = ({
               reject(new Error("Failed to read image data"));
             }
           } else if (fileType === "video") {
-            // Process video using FFmpeg
+            // Traitement de la vidéo avec FFmpeg
             const ffmpeg = new FFmpeg();
-            await ffmpeg.load();
-            const input = await fetchFile(file);
-            await ffmpeg.writeFile(file.name, input);
+            await ffmpeg.load(); // Charger FFmpeg
+            const input = await fetchFile(file); // Récupérer le fichier vidéo
+
+            // Convertir l'entrée en Uint8Array pour obtenir la taille
+            const inputArray = new Uint8Array(input);
+            console.log(
+              `Taille du fichier d'entrée: ${bytesToSize(
+                inputArray.byteLength
+              )}`
+            ); // Log taille d'entrée
+
+            await ffmpeg.writeFile(file.name, inputArray); // Écrire le fichier vidéo dans le système de fichiers virtuel de FFmpeg
 
             const output = `output_${file.name}`;
             const stickerX = (stickerPosition.x / 100) * 100;
             const stickerY = (stickerPosition.y / 100) * 100;
             const scaledStickerSize = (stickerSize / 100) * 100;
 
+            // Exécuter la commande FFmpeg pour ajouter le sticker à la vidéo
             await ffmpeg.exec([
               "-i",
               file.name,
@@ -128,8 +139,24 @@ const ButtonAddStickerOnFiles: React.FC<ButtonAddStickerOnFilesProps> = ({
               output,
             ]);
 
+            // Lire le fichier de sortie
             const data = await ffmpeg.readFile(output);
-            const blob = new Blob([data], { type: file.type });
+
+            // Convertir la chaîne de sortie en Uint8Array
+            const outputArray = new Uint8Array(data);
+            console.log(
+              `Taille du fichier de sortie: ${bytesToSize(
+                outputArray.byteLength
+              )}`
+            ); // Log taille de sortie
+
+            if (outputArray.byteLength === 0) {
+              reject(new Error("Output video file is empty"));
+              return;
+            }
+
+            // Créer un blob à partir des données de sortie et l'ajouter au zip
+            const blob = new Blob([outputArray], { type: file.type });
             zip.file(file.name, blob);
             resolve();
           } else {
