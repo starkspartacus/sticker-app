@@ -9,7 +9,6 @@ import Image from "next/image";
 import { useState } from "react";
 import { motion } from "framer-motion";
 import "tailwind-scrollbar-hide";
-import { UploadMediaAndFiles } from "@/src/features/uploadFiles/UploadMediaAndFiles";
 
 export default function Home() {
   const [stickerUrl, setStickerUrl] = useState<string | null>(null);
@@ -54,8 +53,6 @@ export default function Home() {
         {isToggled && <p>The toggle is ON</p>}
       </div> */}
       <div className="p-4">
-        <UploadMediaAndFiles />
-
         <div className="flex flex-row gap-4 mt-4">
           <ButtonAddStickerOnFiles
             stickerUrl={stickerUrl}
