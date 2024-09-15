@@ -11,7 +11,7 @@ import {
   navigationMenuTriggerStyle,
 } from "@/components/ui/navigation-menu";
 import Image from "next/image";
-import { ModeToggle } from "./theme/btnToggle";
+import { ThemeToggle } from "./theme/ThemeToggle";
 
 const NavigationMenuComponent: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -78,6 +78,7 @@ const NavigationMenuComponent: React.FC = () => {
                 </NavigationMenuItem>
               </NavigationMenuList>
             </NavigationMenu>
+            <ThemeToggle />
           </nav>
           <div className="md:hidden">
             <button
@@ -99,6 +100,7 @@ const NavigationMenuComponent: React.FC = () => {
                 />
               </svg>
             </button>
+            <ThemeToggle />
           </div>
         </div>
         {isOpen && (
@@ -126,7 +128,6 @@ const NavigationMenuComponent: React.FC = () => {
           </div>
         )}
       </header>
-      <ModeToggle />
     </>
   );
 };

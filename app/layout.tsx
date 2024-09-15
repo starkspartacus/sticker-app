@@ -3,7 +3,10 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import NavigationMenu from "@/components/NavigationMenu";
 import { Toaster } from "@/components/ui/toaster";
-import { ThemeProvider } from "@/components/theme/theme-provider";
+
+import { Providers } from "./providers";
+import { SiteConfig } from "@/src/site-config";
+import PlausibleProvider from "next-plausible";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -18,24 +21,23 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <head />
-      <body className={inter.className}>
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
-          <main>
-            <div className="flex justify-center items-center p-4">
-              <NavigationMenu />
-            </div>
-            {children}
-          </main>
-          <Toaster />
-        </ThemeProvider>
-      </body>
-    </html>
+    <>
+      <html lang="en" className="h-full" suppressHydrationWarning>
+        <head>
+          <PlausibleProvider domain={SiteConfig.domain} />
+        </head>
+        <body className={inter.className}>
+          <Providers>
+            <main>
+              <div className="flex justify-center items-center p-4">
+                <NavigationMenu />
+              </div>
+              {children}
+            </main>
+            <Toaster />
+          </Providers>
+        </body>
+      </html>
+    </>
   );
 }

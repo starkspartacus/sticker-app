@@ -35,6 +35,7 @@
     "lucide-react": "^0.441.0",
     "next": "14.2.11",
     "next-international": "^1.2.4",
+    "next-plausible": "^3.12.2",
     "next-themes": "^0.3.0",
     "react": "latest",
     "react-confetti": "^6.1.0",
