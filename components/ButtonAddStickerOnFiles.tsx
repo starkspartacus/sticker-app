@@ -55,11 +55,56 @@ const ButtonAddStickerOnFiles: React.FC<ButtonAddStickerOnFilesProps> = ({
 
           if (fileType === "image") {
             // Traitement de l'image
-            const imageData = e?.target?.result as string;
+            const imageData = e?.target?.result as ArrayBuffer;
             if (imageData) {
-              const arrayBuffer = new TextEncoder().encode(imageData).buffer;
-              const blob = new Blob([arrayBuffer], { type: file.type });
-              zip.file(file.name, blob);
+              const img = new Image();
+              img.src = URL.createObjectURL(
+                new Blob([imageData], { type: file.type })
+              );
+
+              img.onload = () => {
+                const canvas = document.createElement("canvas");
+                const ctx = canvas.getContext("2d");
+
+                if (ctx) {
+                  canvas.width = img.width;
+                  canvas.height = img.height;
+
+                  // Dessiner l'image de base
+                  ctx.drawImage(img, 0, 0);
+
+                  // Calculer la position et la taille du sticker
+                  const stickerX = (stickerPosition.x / 100) * img.width;
+                  const stickerY = (stickerPosition.y / 100) * img.height;
+                  const scaledStickerSize =
+                    (stickerSize / 100) * Math.min(img.width, img.height);
+
+                  // Dessiner le sticker
+                  ctx.drawImage(
+                    stickerImage,
+                    stickerX,
+                    stickerY,
+                    scaledStickerSize,
+                    scaledStickerSize
+                  );
+
+                  // Convertir le canvas en blob
+                  canvas.toBlob((blob) => {
+                    if (blob) {
+                      zip.file(file.name, blob);
+                      resolve();
+                    } else {
+                      reject(new Error("Failed to create image blob"));
+                    }
+                  }, file.type);
+                } else {
+                  reject(new Error("Failed to get canvas context"));
+                }
+              };
+
+              img.onerror = () => {
+                reject(new Error("Failed to load image"));
+              };
             } else {
               reject(new Error("Failed to read image data"));
             }
@@ -83,22 +128,9 @@ const ButtonAddStickerOnFiles: React.FC<ButtonAddStickerOnFilesProps> = ({
               output,
             ]);
 
-            const data = await ffmpeg.readFile("output.mp4");
-            let arrayBuffer: ArrayBuffer;
-            if (typeof data === "string") {
-              arrayBuffer = new TextEncoder().encode(data).buffer;
-            } else {
-              arrayBuffer = data;
-            }
-            const blob = new Blob([arrayBuffer], { type: file.type });
+            const data = await ffmpeg.readFile(output);
+            const blob = new Blob([data], { type: file.type });
             zip.file(file.name, blob);
-
-            // Télécharger le zip
-            const zipBlob = await zip.generateAsync({ type: "blob" });
-            const link = document.createElement("a");
-            link.href = URL.createObjectURL(zipBlob);
-            link.download = "output.zip";
-            link.click();
             resolve();
           } else {
             reject(new Error("Unsupported file type"));
@@ -108,6 +140,10 @@ const ButtonAddStickerOnFiles: React.FC<ButtonAddStickerOnFilesProps> = ({
           toast.error("An error occurred while processing the file.");
           reject(err);
         }
+      };
+
+      fileReader.onerror = () => {
+        reject(new Error("Failed to read file"));
       };
 
       fileReader.readAsArrayBuffer(file);
