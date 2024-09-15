@@ -107,6 +107,7 @@ const ButtonAddStickerOnFiles: React.FC<ButtonAddStickerOnFilesProps> = ({
                 controls: false,
                 autoplay: false,
                 preload: "auto",
+                mute: true,
               });
 
               player.on("loadeddata", () => {
