@@ -8,6 +8,7 @@ import Confetti from "react-confetti";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { FFmpeg } from "@ffmpeg/ffmpeg";
+import { fetchFile } from "@ffmpeg/util";
 import { Buffer } from "buffer";
 import bytesToSize from "@/utils/bytes-to-size"; // Importer la fonction
 
@@ -39,6 +40,8 @@ const ButtonAddStickerOnFiles: React.FC<ButtonAddStickerOnFilesProps> = ({
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
+
+  console.log("sticker upload: ", stickerUrl);
 
   const processFile = async (
     file: File,
@@ -124,17 +127,29 @@ const ButtonAddStickerOnFiles: React.FC<ButtonAddStickerOnFilesProps> = ({
 
             await ffmpeg.writeFile(file.name, inputArray); // Écrire le fichier vidéo dans le système de fichiers virtuel de FFmpeg
 
+            await ffmpeg.readFile(file.name);
+
             const output = `output_${file.name}`;
             const stickerX = (stickerPosition.x / 100) * 100;
             const stickerY = (stickerPosition.y / 100) * 100;
             const scaledStickerSize = (stickerSize / 100) * 100;
 
+            // enregistrer le logo
+
+            if (stickerUrl) {
+              await ffmpeg.writeFile("logo.png", await fetchFile(stickerUrl));
+            }
+
             // Exécuter la commande FFmpeg pour ajouter le sticker à la vidéo
             await ffmpeg.exec([
               "-i",
               file.name,
-              "-vf",
-              `movie=${stickerUrl} [watermark]; [in][watermark] overlay=${stickerX}:${stickerY} [out]`,
+              "-i",
+              "logo.png",
+              "-filter_complex",
+              `[0:v][1:v] overlay=${stickerX / 2}:${
+                stickerY / 2
+              }:enable='between(t,0,20)'`,
               output,
             ]);
 
