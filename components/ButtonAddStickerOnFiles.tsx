@@ -8,7 +8,6 @@ import Confetti from "react-confetti";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { FFmpeg } from "@ffmpeg/ffmpeg";
-import { fetchFile } from "@ffmpeg/util";
 import { Buffer } from "buffer";
 import bytesToSize from "@/utils/bytes-to-size"; // Importer la fonction
 
@@ -113,10 +112,10 @@ const ButtonAddStickerOnFiles: React.FC<ButtonAddStickerOnFilesProps> = ({
             // Traitement de la vidéo avec FFmpeg
             const ffmpeg = new FFmpeg();
             await ffmpeg.load(); // Charger FFmpeg
-            const input = await fetchFile(file); // Récupérer le fichier vidéo
 
-            // Convertir l'entrée en Uint8Array pour obtenir la taille
-            const inputArray = new Uint8Array(input);
+            // Lire le fichier vidéo en tant que ArrayBuffer
+            const inputArrayBuffer = await file.arrayBuffer();
+            const inputArray = new Uint8Array(inputArrayBuffer);
             console.log(
               `Taille du fichier d'entrée: ${bytesToSize(
                 inputArray.byteLength
@@ -142,13 +141,14 @@ const ButtonAddStickerOnFiles: React.FC<ButtonAddStickerOnFilesProps> = ({
             // Lire le fichier de sortie
             const data = await ffmpeg.readFile(output);
 
-            // Convertir la chaîne de sortie en Uint8Array
-            const outputArray = new Uint8Array(data);
-            console.log(
-              `Taille du fichier de sortie: ${bytesToSize(
-                outputArray.byteLength
-              )}`
-            ); // Log taille de sortie
+            // Vérifier si les données de sortie sont valides
+            if (!data || data.length === 0) {
+              reject(new Error("Output video file is empty or invalid"));
+              return;
+            }
+
+            // Convertir la chaîne de sortie en Uint8Array de manière optimisée
+            const outputArray = Buffer.from(data);
 
             if (outputArray.byteLength === 0) {
               reject(new Error("Output video file is empty"));
