@@ -23,6 +23,7 @@ export default function Home() {
   const [stickerSize, setStickerSize] = useState<number>(100); // Size in pixels
   const [showPreview, setShowPreview] = useState<boolean>(false);
   const [isToggled, setIsToggled] = useState(false);
+  const [processedFiles, setProcessedFiles] = useState<Set<string>>(new Set());
 
   const handleStickerChange = (file: File | null, size: number) => {
     if (file) {
@@ -53,6 +54,54 @@ export default function Home() {
         {isToggled && <p>The toggle is ON</p>}
       </div> */}
       <div className="p-4">
+        <div className="flex flex-col md:flex-row justify-around items-start gap-4 w-full">
+          <motion.div
+            className="flex-1"
+            initial={{ x: 0 }}
+            animate={{ x: files.length > 0 ? -20 : 0 }}
+            transition={{ duration: 0.5 }}
+          >
+            <UploadPictureAndVideo
+              onStickerChange={handleStickerChange}
+              onFilesChange={handleFilesChange}
+            />
+          </motion.div>
+          <motion.div
+            className="flex-1 overflow-x-auto overflow-y-auto scrollbar-hide grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4"
+            transition={{ duration: 0.5 }}
+            style={{ maxHeight: "400px" }} // Ajout de la hauteur maximale
+          >
+            {files.map((file, index) => (
+              <motion.div
+                key={index}
+                className="w-24 h-24"
+                initial={{ scale: 0.8 }}
+                animate={{ scale: 1 }}
+                transition={{ duration: 0.5 }}
+              >
+                <MiniatureImageUpload
+                  files={[file]}
+                  processedFiles={processedFiles}
+                />
+              </motion.div>
+            ))}
+          </motion.div>
+        </div>
+        <div className="mt-4">
+          <PositionSticker
+            onStickerChange={(newSticker) => {
+              if (newSticker instanceof File) {
+                const url = URL.createObjectURL(newSticker);
+                setStickerUrl(url);
+              } else {
+                setStickerUrl(newSticker);
+              }
+            }}
+            onPositionChange={(newPosition) => setStickerPosition(newPosition)}
+            onSizeChange={(newSize) => setStickerSize(newSize)} // Ajout de la gestion de la taille
+          />
+        </div>
+
         <div className="flex flex-row gap-4 mt-4">
           <ButtonAddStickerOnFiles
             stickerUrl={stickerUrl}
