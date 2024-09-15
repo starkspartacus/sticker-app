@@ -7,8 +7,9 @@ import ShinyButton from "./magicui/shiny-button";
 import Confetti from "react-confetti";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import videojs from "video.js";
-import "video.js/dist/video-js.css";
+import { FFmpeg } from "@ffmpeg/ffmpeg";
+import { fetchFile } from "@ffmpeg/util";
+import { Buffer } from "buffer";
 
 interface ButtonAddStickerOnFilesProps {
   files: File[];
@@ -51,116 +52,54 @@ const ButtonAddStickerOnFiles: React.FC<ButtonAddStickerOnFilesProps> = ({
       fileReader.onload = async (e) => {
         try {
           const fileType = file.type.split("/")[0];
+
           if (fileType === "image") {
-            // Process image
-            const imageBuffer = e.target?.result as string;
-            const img = new Image();
-            img.src = imageBuffer;
-
-            img.onload = () => {
-              const canvas = document.createElement("canvas");
-              const ctx = canvas.getContext("2d");
-
-              if (ctx) {
-                canvas.width = img.width;
-                canvas.height = img.height;
-
-                // Draw the original image
-                ctx.drawImage(img, 0, 0);
-
-                // Draw the sticker with dynamic size
-                const stickerX = (stickerPosition.x / 100) * img.width;
-                const stickerY = (stickerPosition.y / 100) * img.height;
-                const scaledStickerSize =
-                  (stickerSize / 100) * Math.min(img.width, img.height);
-                ctx.drawImage(
-                  stickerImage,
-                  stickerX - scaledStickerSize / 2,
-                  stickerY - scaledStickerSize / 2,
-                  scaledStickerSize,
-                  scaledStickerSize
-                );
-
-                canvas.toBlob((blob) => {
-                  if (blob) {
-                    zip.file(file.name, blob);
-                    resolve();
-                  } else {
-                    reject(new Error("Failed to process image"));
-                  }
-                });
-              } else {
-                reject(new Error("Failed to get canvas context"));
-              }
-            };
-
-            img.onerror = () => {
-              reject(new Error("Failed to load image"));
-            };
+            // Traitement de l'image
+            const imageData = e?.target?.result as string;
+            if (imageData) {
+              const arrayBuffer = new TextEncoder().encode(imageData).buffer;
+              const blob = new Blob([arrayBuffer], { type: file.type });
+              zip.file(file.name, blob);
+            } else {
+              reject(new Error("Failed to read image data"));
+            }
           } else if (fileType === "video") {
-            // Process video
-            const videoElement = document.createElement("video");
-            videoElement.src = e.target?.result as string;
+            // Process video using FFmpeg
+            const ffmpeg = new FFmpeg();
+            await ffmpeg.load();
+            const input = await fetchFile(file);
+            await ffmpeg.writeFile(file.name, input);
 
-            videoElement.onloadedmetadata = () => {
-              const player = videojs(videoElement, {
-                controls: false,
-                autoplay: false,
-                preload: "auto",
-                mute: true,
-              });
+            const output = `output_${file.name}`;
+            const stickerX = (stickerPosition.x / 100) * 100;
+            const stickerY = (stickerPosition.y / 100) * 100;
+            const scaledStickerSize = (stickerSize / 100) * 100;
 
-              player.on("loadeddata", () => {
-                const canvas = document.createElement("canvas");
-                const ctx = canvas.getContext("2d");
+            await ffmpeg.exec([
+              "-i",
+              file.name,
+              "-vf",
+              `movie=${stickerUrl} [watermark]; [in][watermark] overlay=${stickerX}:${stickerY} [out]`,
+              output,
+            ]);
 
-                if (ctx) {
-                  canvas.width = player.videoWidth();
-                  canvas.height = player.videoHeight();
+            const data = await ffmpeg.readFile("output.mp4");
+            let arrayBuffer: ArrayBuffer;
+            if (typeof data === "string") {
+              arrayBuffer = new TextEncoder().encode(data).buffer;
+            } else {
+              arrayBuffer = data;
+            }
+            const blob = new Blob([arrayBuffer], { type: file.type });
+            zip.file(file.name, blob);
 
-                  // Draw the video frame
-                  const videoEl = player
-                    .el()
-                    .querySelector("video") as HTMLVideoElement;
-                  if (videoEl) {
-                    ctx.drawImage(videoEl, 0, 0, canvas.width, canvas.height);
-
-                    // Draw the sticker with dynamic size
-                    const stickerX = (stickerPosition.x / 100) * canvas.width;
-                    const stickerY = (stickerPosition.y / 100) * canvas.height;
-                    const scaledStickerSize =
-                      (stickerSize / 100) *
-                      Math.min(canvas.width, canvas.height);
-                    ctx.drawImage(
-                      stickerImage,
-                      stickerX - scaledStickerSize / 2,
-                      stickerY - scaledStickerSize / 2,
-                      scaledStickerSize,
-                      scaledStickerSize
-                    );
-
-                    canvas.toBlob((blob) => {
-                      if (blob) {
-                        zip.file(file.name, blob);
-                        resolve();
-                      } else {
-                        reject(new Error("Failed to process video"));
-                      }
-                    });
-                  } else {
-                    reject(new Error("Failed to get video element"));
-                  }
-                } else {
-                  reject(new Error("Failed to get canvas context"));
-                }
-              });
-            };
-
-            videoElement.onerror = () => {
-              setError("Failed to load video");
-              toast.error("Failed to load video");
-              reject(new Error("Failed to load video"));
-            };
+            // Télécharger le zip
+            const zipBlob = await zip.generateAsync({ type: "blob" });
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(zipBlob);
+            link.download = "output.zip";
+            link.click();
+            resolve();
           } else {
             reject(new Error("Unsupported file type"));
           }
@@ -171,7 +110,7 @@ const ButtonAddStickerOnFiles: React.FC<ButtonAddStickerOnFilesProps> = ({
         }
       };
 
-      fileReader.readAsDataURL(file);
+      fileReader.readAsArrayBuffer(file);
     });
   };
 

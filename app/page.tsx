@@ -53,7 +53,7 @@ export default function Home() {
         </button>
         {isToggled && <p>The toggle is ON</p>}
       </div> */}
-      <div className="p-4">
+      <div className="p-4 mt-40">
         <div className="flex flex-col md:flex-row justify-around items-start gap-4 w-full">
           <motion.div
             className="flex-1"

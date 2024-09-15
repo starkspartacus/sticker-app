@@ -10,7 +10,12 @@ import type { PropsWithChildren } from "react";
 
 export const Providers = ({ children }: PropsWithChildren) => {
   return (
-    <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+    <ThemeProvider
+      attribute="class"
+      defaultTheme="system"
+      enableSystem
+      themes={["light", "dark"]}
+    >
       <PlausibleProvider domain={SiteConfig.domain}>
         {children}
       </PlausibleProvider>

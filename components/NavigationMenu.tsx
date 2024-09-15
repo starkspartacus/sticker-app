@@ -16,7 +16,7 @@ import { LuMenu } from "react-icons/lu";
 
 const NavigationMenuComponent: React.FC = () => {
   return (
-    <nav className="fixed z-50 flex items-center justify-between w-full h-24 px-4 py-10 backdrop-blur-md bg-background bg-opacity-30 md:px-8 lg:px-12 xl:px-16 2xl:px-24">
+    <nav className="fixed mt-10 z-50 flex items-center justify-between w-full h-24 px-4 py-10 backdrop-blur-md bg-background bg-opacity-30 md:px-8 lg:px-12 xl:px-16 2xl:px-24">
       <Link href="/">
         <Image
           alt="logo"
@@ -39,7 +39,7 @@ const NavigationMenuComponent: React.FC = () => {
       </div>
       <div className="items-center hidden gap-2 md:flex">
         <ModeToggle />
-        <Link href="https://github.com/benlhachemi/modifio.git">
+        <Link href="">
           <Button
             variant="default"
             className="items-center hidden gap-2 bg-orange-600 rounded-full w-fit md:flex"
