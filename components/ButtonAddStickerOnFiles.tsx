@@ -134,22 +134,19 @@ const ButtonAddStickerOnFiles: React.FC<ButtonAddStickerOnFilesProps> = ({
             const stickerY = (stickerPosition.y / 100) * 100;
             const scaledStickerSize = (stickerSize / 100) * 100;
 
-            // enregistrer le logo
-
+            // Enregistrer le logo
             if (stickerUrl) {
               await ffmpeg.writeFile("logo.png", await fetchFile(stickerUrl));
             }
 
-            // Exécuter la commande FFmpeg pour ajouter le sticker à la vidéo
+            // Exécuter la commande FFmpeg pour redimensionner et ajouter le sticker à la vidéo
             await ffmpeg.exec([
               "-i",
               file.name,
               "-i",
               "logo.png",
               "-filter_complex",
-              `[0:v][1:v] overlay=${stickerX / 2}:${
-                stickerY / 2
-              }:enable='between(t,0,20)'`,
+              `[1:v] scale=${scaledStickerSize}:${scaledStickerSize} [sticker]; [0:v][sticker] overlay=${stickerX}:${stickerY}:enable='between(t,0,20)'`,
               output,
             ]);
 
