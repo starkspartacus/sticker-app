@@ -13,6 +13,9 @@ import {
 } from "@/components/ui/sheet";
 import { ModeToggle } from "./theme/ThemeToggle";
 import { LuMenu } from "react-icons/lu";
+import btnSingUp from "./btnSingUp";
+import BtnSignUp from "./btnSingUp"; // Ensure this import is correct
+import Btnlogin from "./Btnlogin";
 
 const NavigationMenuComponent: React.FC = () => {
   return (
@@ -39,7 +42,9 @@ const NavigationMenuComponent: React.FC = () => {
       </div>
       <div className="items-center hidden gap-2 md:flex">
         <ModeToggle />
-        <Link href="">
+        <BtnSignUp />
+        <Btnlogin />
+        {/* <Link href="">
           <Button
             variant="default"
             className="items-center hidden gap-2 bg-orange-600 rounded-full w-fit md:flex"
@@ -50,7 +55,7 @@ const NavigationMenuComponent: React.FC = () => {
               <LuMenu />
             </span>
           </Button>
-        </Link>
+        </Link> */}
       </div>
       {/* MOBILE NAV */}
       <Sheet>
