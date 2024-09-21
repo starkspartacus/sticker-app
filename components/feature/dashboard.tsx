@@ -39,13 +39,16 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
 
 export const description =
   "An application shell with a header and main content area. The header has a navbar, a search input and and a user nav dropdown. The user nav is toggled by a button with an avatar image. The main content area is divided into two rows. The first row has a grid of cards with statistics. The second row has a grid of cards with a table of recent transactions and a list of recent sales.";
 
-export function DashboardUser() {
+export async function DashboardUser() {
+  const { getUser } = getKindeServerSession();
+  const user = await getUser();
   return (
-    <div className="flex min-h-screen w-full flex-col">
+    <div className="flex min-h-screen w-full flex-col mt-11">
       <header className="sticky top-0 flex h-16 items-center gap-4 border-b bg-background px-4 md:px-6">
         <nav className="hidden flex-col gap-6 text-lg font-medium md:flex md:flex-row md:items-center md:gap-5 md:text-sm lg:gap-6">
           <Link
@@ -178,6 +181,7 @@ export function DashboardUser() {
               <div className="text-2xl font-bold">$45,231.89</div>
               <p className="text-xs text-muted-foreground">
                 +20.1% from last month
+                <div>{user.family_name}</div>
               </p>
             </CardContent>
           </Card>
