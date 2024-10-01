@@ -1,6 +1,11 @@
 import MaxWidthWrapper from "@/components/MaxWidthWrapper";
 import { buttonVariants } from "@/components/ui/button";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import UpgradeButton from "@/components/UpgradeButton";
 import { PLANS } from "@/config/stripe";
 import { cn } from "@/lib/utils";
@@ -8,9 +13,9 @@ import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
 import { ArrowRight, Check, HelpCircle, Minus } from "lucide-react";
 import Link from "next/link";
 
-const Page = () => {
+async function Page() {
   const { getUser } = getKindeServerSession();
-  const user = getUser();
+  const user = await getUser();
 
   const pricingItems = [
     {
@@ -74,14 +79,17 @@ const Page = () => {
         <div className="mx-auto mb-10 sm:max-w-lg">
           <h1 className="text-6xl font-bold sm:text-7xl">Tarifs</h1>
           <p className="mt-5 text-gray-600 sm:text-lg">
-            Obtenez des images en pleine résolution <br /> 1 IMAGE = 1 CRÉDIT ou moins
+            Obtenez des images en pleine résolution <br /> 1 IMAGE = 1 CRÉDIT ou
+            moins
           </p>
         </div>
 
         <div className="pt-12 grid grid-cols-2 gap-10 lg:grid-cols-2">
           <TooltipProvider>
             {pricingItems.map(({ plan, tagline, quota, features }) => {
-              const price = PLANS.find((p) => p.slug === plan.toLowerCase())?.price.amount || 0;
+              const price =
+                PLANS.find((p) => p.slug === plan.toLowerCase())?.price
+                  .amount || 0;
 
               return (
                 <div
@@ -98,9 +106,13 @@ const Page = () => {
                   )}
 
                   <div className="p-5">
-                    <h3 className="my-3 text-center font-display text-3xl font-bold">{plan}</h3>
+                    <h3 className="my-3 text-center font-display text-3xl font-bold">
+                      {plan}
+                    </h3>
                     <p className="text-gray-500">{tagline}</p>
-                    <p className="my-5 font-display text-6xl font-semibold">${price}</p>
+                    <p className="my-5 font-display text-6xl font-semibold">
+                      ${price}
+                    </p>
                     <p className="text-gray-500">per month</p>
                   </div>
 
@@ -142,7 +154,9 @@ const Page = () => {
                               <TooltipTrigger className="cursor-default ml-1.5">
                                 <HelpCircle className="h-4 w-4 text-zinc-500" />
                               </TooltipTrigger>
-                              <TooltipContent className="w-80 p-2">{footnote}</TooltipContent>
+                              <TooltipContent className="w-80 p-2">
+                                {footnote}
+                              </TooltipContent>
                             </Tooltip>
                           </div>
                         ) : (
@@ -192,6 +206,6 @@ const Page = () => {
       </MaxWidthWrapper>
     </>
   );
-};
+}
 
 export default Page;

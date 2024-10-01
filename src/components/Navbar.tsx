@@ -1,8 +1,11 @@
+"use client";
+
 import { LoginLink, RegisterLink } from "@kinde-oss/kinde-auth-nextjs/server";
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 import MaxWidthWrapper from "./MaxWidthWrapper";
 import { buttonVariants } from "./ui/button";
+import Image from "next/image";
 
 const Navbar = () => {
   return (
@@ -11,7 +14,12 @@ const Navbar = () => {
         <div className="flex h-14 items-center justify-between border-b border-zinc-200">
           <Link href="/" className="flex z-40 font-semibold">
             <span>
-              Sticker<span className="text-blue-600">App</span>
+              <Image
+                width={90}
+                height={90}
+                src="/logo/logo_app.png"
+                alt="app logo"
+              />
             </span>
           </Link>
 
