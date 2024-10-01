@@ -1,14 +1,14 @@
+import typography from "@tailwindcss/typography";
 import type { Config } from "tailwindcss";
+import tailwindcssAnimate from "tailwindcss-animate";
 
-const config = {
-  darkMode: ["class"],
+const config: Config = {
+  darkMode: "class",
   content: [
-    "./pages/**/*.{ts,tsx}",
-    "./components/**/*.{ts,tsx}",
-    "./app/**/*.{ts,tsx}",
-    "./src/**/*.{ts,tsx}",
+    "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
+    "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
+    "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
   ],
-  prefix: "",
   theme: {
     container: {
       center: true,
@@ -59,28 +59,29 @@ const config = {
         sm: "calc(var(--radius) - 4px)",
       },
       keyframes: {
-        "border-beam": {
-          "100%": {
-            "offset-distance": "100%",
+        "accordion-down": {
+          from: {
+            height: "0",
+          },
+          to: {
+            height: "var(--radix-accordion-content-height)",
           },
         },
-        "accordion-down": {
-          from: { height: "0" },
-          to: { height: "var(--radix-accordion-content-height)" },
-        },
         "accordion-up": {
-          from: { height: "var(--radix-accordion-content-height)" },
-          to: { height: "0" },
+          from: {
+            height: "var(--radix-accordion-content-height)",
+          },
+          to: {
+            height: "0",
+          },
         },
       },
       animation: {
-        "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
-        "border-beam": "border-beam calc(var(--duration)*1s) infinite linear",
+        "accordion-down": "accordion-down 0.2s ease-out",
       },
     },
   },
-  plugins: [require("tailwindcss-animate")],
-} satisfies Config;
-
+  plugins: [tailwindcssAnimate, typography],
+};
 export default config;
