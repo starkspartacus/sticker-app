@@ -32,7 +32,7 @@ const Navbar = () => {
                   size: "sm",
                 })}
               >
-                Tarifs
+                Tarif
               </Link>
               <LoginLink
                 className={buttonVariants({
