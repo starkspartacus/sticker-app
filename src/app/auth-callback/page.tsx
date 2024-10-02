@@ -1,20 +1,16 @@
 "use client";
-
 import { Loader2 } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, Suspense } from "react";
 import { trpc } from "../_trpc/client";
-
-const Page = () => {
+const AuthCallbackPage = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const origin = searchParams.get("origin");
-
-  const { data, error, isSuccess, isError } = trpc.authCallback.useQuery(undefined, {
-    retry: true,
-    retryDelay: 500,
-  });
-
+  const { data, error, isSuccess, isError } = trpc.authCallback.useQuery(
+    undefined,
+    { retry: true, retryDelay: 500 }
+  );
   useEffect(() => {
     if (isSuccess && data?.success) {
       router.push(origin ? `/${origin}` : "/dashboard");
@@ -23,7 +19,6 @@ const Page = () => {
       router.push("/sign-in");
     }
   }, [isSuccess, isError, data, error, origin, router]);
-
   return (
     <div className="w-full mt-24 flex justify-center">
       <div className="flex flex-col items-center gap-2">
@@ -34,5 +29,11 @@ const Page = () => {
     </div>
   );
 };
-
-export default Page;
+export default function Page() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      {" "}
+      <AuthCallbackPage />
+    </Suspense>
+  );
+}
