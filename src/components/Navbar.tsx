@@ -1,5 +1,3 @@
-"use client";
-
 import { LoginLink, RegisterLink } from "@kinde-oss/kinde-auth-nextjs/server";
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
