@@ -1,5 +1,4 @@
 "use client";
-
 import { Loader2 } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect } from "react";
@@ -9,12 +8,10 @@ const AuthCallbackPage = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const origin = searchParams.get("origin");
-
   const { data, error, isSuccess, isError } = trpc.authCallback.useQuery(undefined, {
     retry: true,
     retryDelay: 500,
   });
-
   useEffect(() => {
     if (isSuccess && data?.success) {
       router.push(origin ? `/${origin}` : "/dashboard");
@@ -23,7 +20,6 @@ const AuthCallbackPage = () => {
       router.push("/sign-in");
     }
   }, [isSuccess, isError, data, error, origin, router]);
-
   return (
     <div className="w-full mt-24 flex justify-center">
       <div className="flex flex-col items-center gap-2">
