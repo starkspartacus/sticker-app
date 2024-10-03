@@ -2,10 +2,9 @@
 
 import MaxWidthWrapper from "@/components/MaxWidthWrapper";
 import { Button } from "@/components/ui/button";
-import { saveAs } from "file-saver"; // Import file-saver to download files
-import JSZip from "jszip"; // Import JSZip for creating the zip file
+import axios from "axios";
 import { Image } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Draggable, { DraggableEventHandler } from "react-draggable"; // Import react-draggable for drag functionality
 
 const WatermarkPage = () => {
@@ -15,6 +14,7 @@ const WatermarkPage = () => {
   const [stickerPosition, setStickerPosition] = useState({ x: 0, y: 0 }); // Global sticker position
   const [stickerSize, setStickerSize] = useState({ width: 150, height: 150 }); // Global sticker size
   const [selectedImageIndex, setSelectedImageIndex] = useState<number>(0); // For tracking selected image
+  const stickerRef = useRef(null); // Use ref to avoid findDOMNode warning
 
   useEffect(() => {
     const storedImages = localStorage.getItem("selectedImages");
@@ -53,69 +53,84 @@ const WatermarkPage = () => {
     setStickerSize({ width: newSize, height: newSize });
   };
 
-  // Function to download the images with the watermark in a zip file
-  const downloadImagesAsZip = async () => {
-    const zip = new JSZip();
+  // Function to convert image URL to base64 data URL
+  const imageToDataURL = (url: string, callback: (dataurl: string) => void) => {
+    const xhr = new XMLHttpRequest();
+    xhr.onload = function () {
+      const reader = new FileReader();
+      reader.onloadend = function () {
+        callback(reader.result as string);
+      };
+      reader.readAsDataURL(xhr.response);
+    };
+    xhr.open("GET", url);
+    xhr.responseType = "blob";
+    xhr.send();
+  };
 
-    for (let i = 0; i < imagePreviews.length; i++) {
-      const img = new window.Image();
-      img.src = imagePreviews[i];
+  // Upload image and sticker to the backend and apply the watermark
+  const uploadImageWithWatermark = async (imageFile: File, stickerFile: File): Promise<void> => {
+    const formData = new FormData();
+    formData.append("image", imageFile);
+    formData.append("watermark", stickerFile);
 
-      // Create a canvas to apply the watermark
-      const canvas = document.createElement("canvas");
-      const ctx = canvas.getContext("2d");
-
-      if (!ctx) continue;
-
-      // Wait for the image to load
-      await new Promise((resolve) => {
-        img.onload = () => {
-          canvas.width = img.width;
-          canvas.height = img.height;
-
-          // Draw the base image
-          ctx.drawImage(img, 0, 0, img.width, img.height);
-
-          // Draw the sticker (watermark)
-          if (sticker) {
-            const stickerImg = new window.Image();
-            stickerImg.src = sticker;
-
-            stickerImg.onload = () => {
-              // Scaling the position and size correctly based on canvas dimensions
-              const container = document.querySelector("#image-container"); // Updated to use a custom ID
-              if (container) {
-                const scaledX = (stickerPosition.x / container.clientWidth) * canvas.width;
-                const scaledY = (stickerPosition.y / container.clientHeight) * canvas.height;
-                const scaledWidth = (stickerSize.width / container.clientWidth) * canvas.width;
-                const scaledHeight = (stickerSize.height / container.clientHeight) * canvas.height;
-
-                ctx.drawImage(stickerImg, scaledX, scaledY, scaledWidth, scaledHeight);
-                resolve(true);
-              } else {
-                resolve(true);
-              }
-            };
-          } else {
-            resolve(true);
-          }
-        };
+    try {
+      const response = await axios.post("http://localhost:8000/watermark-image/", formData, {
+        responseType: "blob", // Important pour recevoir le fichier image modifié
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
       });
 
-      // Convert the canvas to Blob for the correct file format
-      const blob = await new Promise<Blob | null>((resolve) => {
-        canvas.toBlob((blob) => resolve(blob), "image/jpeg");
-      });
-
-      if (blob) {
-        zip.file(`image-${i + 1}.jpg`, blob);
-      }
+      // Télécharger l'image modifiée
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", "watermarked_image.jpg");
+      document.body.appendChild(link);
+      link.click();
+    } catch (error) {
+      console.error("Error uploading image:", error);
     }
+  };
 
-    // Generate the zip and download it
-    zip.generateAsync({ type: "blob" }).then((blob) => {
-      saveAs(blob, "watermarked-images.zip");
-    });
+  // Convert data URL to File
+  const dataURLToFile = (dataurl: string, filename: string): File => {
+    try {
+      console.log("Data URL:", dataurl); // Ajout du log pour voir la valeur de `dataurl`
+      if (!dataurl.startsWith("data:image/")) {
+        throw new Error("Invalid data URL format");
+      }
+      const arr = dataurl.split(",");
+      const mimeMatch = arr[0].match(/:(.*?);/);
+      const mime = mimeMatch ? mimeMatch[1] : "";
+      const bstr = atob(arr[1]);
+      let n = bstr.length;
+      const u8arr = new Uint8Array(n);
+      while (n--) {
+        u8arr[n] = bstr.charCodeAt(n);
+      }
+      return new File([u8arr], filename, { type: mime });
+    } catch (error) {
+      console.error("Error in dataURLToFile:", error);
+      throw error;
+    }
+  };
+
+  // Function to handle the image download with watermark
+  const handleDownloadWithWatermark = () => {
+    if (imagePreviews[selectedImageIndex] && sticker) {
+      // Convert the selected image and sticker to base64 URLs first
+      imageToDataURL(imagePreviews[selectedImageIndex], (imageDataUrl) => {
+        imageToDataURL(sticker!, (stickerDataUrl) => {
+          const imageFile = dataURLToFile(imageDataUrl, "image.jpg");
+          const stickerFile = dataURLToFile(stickerDataUrl, "sticker.png");
+          uploadImageWithWatermark(imageFile, stickerFile);
+        });
+      });
+    } else {
+      console.error("Image or sticker is missing");
+    }
   };
 
   return (
@@ -123,7 +138,6 @@ const WatermarkPage = () => {
       <MaxWidthWrapper>
         <div className="flex-grow p-10">
           <div className="flex flex-col items-center space-y-6">
-            {/* Dropdown to select different images */}
             {imagePreviews.length > 0 && (
               <select
                 className="border border-gray-300 rounded-md p-2 mb-4"
@@ -138,22 +152,21 @@ const WatermarkPage = () => {
               </select>
             )}
 
-            {/* Display the currently selected image */}
             {imagePreviews.length > 0 && (
               <div id="image-container" className="relative w-3/4">
-                {" "}
-                {/* Added custom ID */}
                 <img
-                  src={imagePreviews[selectedImageIndex]} // Show the selected image
+                  src={imagePreviews[selectedImageIndex]}
                   alt="Main Image"
                   className="w-full h-auto object-cover rounded-md border border-gray-300 shadow-lg"
                 />
                 {showSticker && sticker && (
                   <Draggable
-                    position={stickerPosition} // Global position across all images
-                    onStop={handleDragStop} // Handle drag stop to set new position
+                    nodeRef={stickerRef} // Use ref to avoid findDOMNode warning
+                    position={stickerPosition}
+                    onStop={handleDragStop}
                   >
                     <div
+                      ref={stickerRef}
                       className="sticker"
                       style={{
                         width: stickerSize.width,
@@ -168,7 +181,7 @@ const WatermarkPage = () => {
                         src={sticker}
                         alt="Sticker"
                         className="w-full h-full"
-                        style={{ objectFit: "contain" }} // Ensures the image fits inside the box
+                        style={{ objectFit: "contain" }}
                       />
                     </div>
                   </Draggable>
@@ -194,7 +207,6 @@ const WatermarkPage = () => {
         </div>
       </MaxWidthWrapper>
 
-      {/* Sidebar for watermark options */}
       <div className="w-1/5 bg-gray-100 flex flex-col items-center justify-start p-6 shadow-lg">
         <h1 className="text-xl font-bold mb-6 text-center">Stickers d&apos;image</h1>
 
@@ -212,7 +224,6 @@ const WatermarkPage = () => {
           onChange={handleStickerUpload}
         />
 
-        {/* Slider to adjust the size of the sticker */}
         {showSticker && (
           <div className="w-full mt-4">
             <label className="block text-sm font-medium mb-2">Taille du filigrane</label>
@@ -220,7 +231,7 @@ const WatermarkPage = () => {
               type="range"
               min="50"
               max="500"
-              value={stickerSize.width} // Assume the height follows the width for simplicity
+              value={stickerSize.width}
               onChange={handleSizeChange}
               className="w-full"
             />
@@ -228,7 +239,7 @@ const WatermarkPage = () => {
         )}
 
         <Button
-          onClick={downloadImagesAsZip}
+          onClick={handleDownloadWithWatermark}
           className="py-3 px-6 rounded-md mt-auto w-full text-sm flex items-center justify-center"
         >
           Télécharger

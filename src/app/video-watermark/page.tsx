@@ -97,7 +97,13 @@ const VideoWatermarkPage = () => {
       });
 
       const blob = await new Promise<Blob | null>((resolve) => {
-        canvas.toBlob((blob) => resolve(blob), "image/jpeg");
+        // Reference the canvas created above
+        const canvas = document.querySelector("canvas");
+        if (canvas instanceof HTMLCanvasElement) {
+          canvas.toBlob((blob) => resolve(blob), "image/jpeg");
+        } else {
+          resolve(null);
+        }
       });
 
       if (blob) {
