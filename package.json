@@ -6,11 +6,12 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "postinstall": "prisma generate"
   },
   "dependencies": {
-    "@ffmpeg/core": "^0.12.6",
-    "@ffmpeg/ffmpeg": "^0.12.10",
+    "@ffmpeg/core": "^0.11.0",
+    "@ffmpeg/ffmpeg": "^0.11.6",
     "@kinde-oss/kinde-auth-nextjs": "^2.3.8",
     "@prisma/client": "^5.20.0",
     "@radix-ui/react-dialog": "^1.1.1",

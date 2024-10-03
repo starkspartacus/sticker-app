@@ -5,22 +5,22 @@ import { useState } from "react";
 import { Button } from "./ui/button";
 
 const UploadVideoButton = () => {
-  const [files, setFiles] = useState<FileList | null>(null);
+  const [videos, setVideos] = useState<FileList | null>(null);
   const router = useRouter();
-  console.log(files);
+  console.log(videos);
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const selectedFiles = e.target.files;
-    if (selectedFiles) {
-      const fileArray = Array.from(selectedFiles).map((file) => URL.createObjectURL(file));
-      localStorage.setItem("selectedVideos", JSON.stringify(fileArray)); // Enregistre les URLs des vidéos dans localStorage
-      setFiles(selectedFiles);
-      router.push("/video-watermark"); // Redirige vers la page dédiée aux vidéos avec watermark
+  const handleVideoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedVideos = e.target.files;
+    if (selectedVideos) {
+      const videoArray = Array.from(selectedVideos).map((video) => URL.createObjectURL(video));
+      localStorage.setItem("selectedVideos", JSON.stringify(videoArray)); // Save video URLs to localStorage
+      setVideos(selectedVideos);
+      router.push("/video-watermark");
     }
   };
 
   return (
-    <>
+    <div>
       <Button>
         <label htmlFor="video-upload" className="cursor-pointer">
           Sélectionner des Vidéos
@@ -29,12 +29,11 @@ const UploadVideoButton = () => {
       <input
         id="video-upload"
         type="file"
-        accept="video/*"
         multiple
         className="hidden"
-        onChange={handleFileChange}
+        onChange={handleVideoChange}
       />
-    </>
+    </div>
   );
 };
 

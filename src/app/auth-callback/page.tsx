@@ -2,10 +2,10 @@
 
 import { Loader2 } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect } from "react";
+import { Suspense, useEffect } from "react";
 import { trpc } from "../_trpc/client";
 
-const Page = () => {
+const AuthCallbackPage = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const origin = searchParams.get("origin");
@@ -35,4 +35,10 @@ const Page = () => {
   );
 };
 
-export default Page;
+export default function Page() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <AuthCallbackPage />
+    </Suspense>
+  );
+}

@@ -2,31 +2,28 @@
 
 import MaxWidthWrapper from "@/components/MaxWidthWrapper";
 import { Button } from "@/components/ui/button";
-import { saveAs } from "file-saver"; // Pour télécharger les fichiers
-import JSZip from "jszip"; // Pour créer le fichier ZIP
-import { useRef, useState } from "react";
-import Draggable from "react-draggable"; // Pour la fonction de glisser-déposer
+import { saveAs } from "file-saver"; // Import file-saver to download files
+import JSZip from "jszip"; // Import JSZip for creating the zip file
+import { Video } from "lucide-react"; // Icon for video upload
+import { useEffect, useState } from "react";
+import Draggable, { DraggableEventHandler } from "react-draggable"; // Import react-draggable for drag functionality
 
 const VideoWatermarkPage = () => {
   const [videoPreviews, setVideoPreviews] = useState<string[]>([]);
   const [sticker, setSticker] = useState<string | null>(null);
   const [showSticker, setShowSticker] = useState<boolean>(false);
-  const [stickerPosition, setStickerPosition] = useState({ x: 0, y: 0 });
-  const [stickerSize, setStickerSize] = useState({ width: 150, height: 150 });
-  const [selectedVideoIndex, setSelectedVideoIndex] = useState<number>(0);
-  const videoRef = useRef<HTMLVideoElement | null>(null);
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const [stickerPosition, setStickerPosition] = useState({ x: 0, y: 0 }); // Global sticker position
+  const [stickerSize, setStickerSize] = useState({ width: 150, height: 150 }); // Global sticker size
+  const [selectedVideoIndex, setSelectedVideoIndex] = useState<number>(0); // For tracking selected video
 
-  // Gérer l'upload de la vidéo
-  const handleVideoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (files) {
-      const videoArray = Array.from(files).map((file) => URL.createObjectURL(file));
-      setVideoPreviews(videoArray);
+  useEffect(() => {
+    const storedVideos = localStorage.getItem("selectedVideos");
+    if (storedVideos) {
+      setVideoPreviews(JSON.parse(storedVideos));
     }
-  };
+  }, []);
 
-  // Gérer l'upload du sticker
+  // Handle sticker upload
   const handleStickerUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -39,70 +36,79 @@ const VideoWatermarkPage = () => {
     }
   };
 
-  // Fonction pour appliquer un filigrane et télécharger les vidéos avec le filigrane dans un fichier ZIP
-  const applyWatermarkAndDownloadZip = async () => {
-    const zip = new JSZip(); // Initialiser JSZip pour stocker les vidéos
-    const canvas = canvasRef.current;
-    const ctx = canvas?.getContext("2d");
+  // Handle drag stop event, update global sticker position
+  const handleDragStop: DraggableEventHandler = (e, data) => {
+    setStickerPosition({ x: data.x, y: data.y });
+  };
 
-    if (canvas && ctx) {
-      for (let i = 0; i < videoPreviews.length; i++) {
-        const video = document.createElement("video");
-        video.src = videoPreviews[i];
+  // Handle video selection from dropdown
+  const handleVideoSelection = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const index = parseInt(e.target.value, 10);
+    setSelectedVideoIndex(index);
+  };
 
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
+  // Function to handle the size adjustment
+  const handleSizeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newSize = parseInt(e.target.value, 10);
+    setStickerSize({ width: newSize, height: newSize });
+  };
 
-        const stream = canvas.captureStream(); // Capturer le flux du canvas
-        const recorder = new MediaRecorder(stream);
-        const chunks: Blob[] = [];
+  // Function to download the videos with the watermark in a zip file
+  const downloadVideosAsZip = async () => {
+    const zip = new JSZip();
 
-        recorder.ondataavailable = (e) => chunks.push(e.data);
-        recorder.onstop = async () => {
-          const blob = new Blob(chunks, { type: "video/mp4" });
+    for (let i = 0; i < videoPreviews.length; i++) {
+      const videoElement = document.createElement("video");
+      videoElement.src = videoPreviews[i];
 
-          // Ajouter la vidéo avec filigrane au fichier ZIP
-          zip.file(`video-${i + 1}-watermarked.mp4`, blob);
-        };
+      // Wait for the video to load metadata (dimensions)
+      await new Promise((resolve) => {
+        videoElement.onloadedmetadata = () => {
+          const canvas = document.createElement("canvas");
+          const ctx = canvas.getContext("2d");
 
-        recorder.start();
+          if (!ctx) return;
 
-        // Lire la vidéo et dessiner les frames sur le canvas avec le filigrane
-        video.play();
+          canvas.width = videoElement.videoWidth;
+          canvas.height = videoElement.videoHeight;
 
-        video.ontimeupdate = () => {
-          ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+          // Draw the video frame
+          ctx.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
 
-          // Dessiner le filigrane (sticker)
+          // Draw the sticker (watermark)
           if (sticker) {
-            const stickerImg = new Image();
+            const stickerImg = new window.Image();
             stickerImg.src = sticker;
+
             stickerImg.onload = () => {
-              ctx.drawImage(
-                stickerImg,
-                stickerPosition.x,
-                stickerPosition.y,
-                stickerSize.width,
-                stickerSize.height
-              );
+              const container = document.querySelector("#video-container");
+              if (container) {
+                const scaledX = (stickerPosition.x / container.clientWidth) * canvas.width;
+                const scaledY = (stickerPosition.y / container.clientHeight) * canvas.height;
+                const scaledWidth = (stickerSize.width / container.clientWidth) * canvas.width;
+                const scaledHeight = (stickerSize.height / container.clientHeight) * canvas.height;
+
+                ctx.drawImage(stickerImg, scaledX, scaledY, scaledWidth, scaledHeight);
+              }
             };
           }
+          resolve(true);
         };
-
-        // Arrêter l'enregistrement à la fin de la vidéo
-        await new Promise((resolve) => {
-          video.onended = () => {
-            recorder.stop();
-            resolve(null);
-          };
-        });
-      }
-
-      // Générer le fichier ZIP et le télécharger
-      zip.generateAsync({ type: "blob" }).then((blob) => {
-        saveAs(blob, "watermarked-videos.zip");
       });
+
+      const blob = await new Promise<Blob | null>((resolve) => {
+        canvas.toBlob((blob) => resolve(blob), "image/jpeg");
+      });
+
+      if (blob) {
+        zip.file(`video-frame-${i + 1}.jpg`, blob); // Save video frames as images
+      }
     }
+
+    // Generate the zip and download it
+    zip.generateAsync({ type: "blob" }).then((blob) => {
+      saveAs(blob, "watermarked-videos.zip");
+    });
   };
 
   return (
@@ -110,11 +116,12 @@ const VideoWatermarkPage = () => {
       <MaxWidthWrapper>
         <div className="flex-grow p-10">
           <div className="flex flex-col items-center space-y-6">
+            {/* Dropdown to select different videos */}
             {videoPreviews.length > 0 && (
               <select
                 className="border border-gray-300 rounded-md p-2 mb-4"
                 value={selectedVideoIndex}
-                onChange={(e) => setSelectedVideoIndex(parseInt(e.target.value, 10))}
+                onChange={handleVideoSelection}
               >
                 {videoPreviews.map((video, index) => (
                   <option key={index} value={index}>
@@ -124,20 +131,18 @@ const VideoWatermarkPage = () => {
               </select>
             )}
 
-            {/* Afficher la vidéo sélectionnée */}
+            {/* Display the currently selected video */}
             {videoPreviews.length > 0 && (
               <div id="video-container" className="relative w-3/4">
                 <video
-                  ref={videoRef}
+                  src={videoPreviews[selectedVideoIndex]}
                   controls
                   className="w-full h-auto object-cover rounded-md border border-gray-300 shadow-lg"
-                  src={videoPreviews[selectedVideoIndex]}
                 />
-                <canvas ref={canvasRef} className="hidden" />
                 {showSticker && sticker && (
                   <Draggable
-                    position={stickerPosition}
-                    onStop={(e, data) => setStickerPosition({ x: data.x, y: data.y })}
+                    position={stickerPosition} // Global position across all videos
+                    onStop={handleDragStop} // Handle drag stop to set new position
                   >
                     <div
                       className="sticker"
@@ -161,29 +166,31 @@ const VideoWatermarkPage = () => {
                 )}
               </div>
             )}
+
+            {videoPreviews.length > 1 && (
+              <div className="flex justify-center space-x-6">
+                {videoPreviews.slice(1).map((src, index) => (
+                  <div key={index} className="relative text-center">
+                    <video
+                      src={src}
+                      controls
+                      className="w-40 h-auto object-cover rounded-md border border-gray-300"
+                    />
+                    <p className="mt-2 text-sm text-gray-600">{`Vidéo ${index + 2}`}</p>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </MaxWidthWrapper>
 
-      {/* Barre latérale pour options de filigrane */}
+      {/* Sidebar for watermark options */}
       <div className="w-1/5 bg-gray-100 flex flex-col items-center justify-start p-6 shadow-lg">
         <h1 className="text-xl font-bold mb-6 text-center">Stickers de vidéo</h1>
 
         <Button className="bg-purple-500 py-2 px-4 rounded-md mb-4 w-full text-sm flex items-center justify-center">
-          <label htmlFor="video-upload" className="cursor-pointer">
-            Sélectionner des Vidéos
-          </label>
-        </Button>
-        <input
-          id="video-upload"
-          type="file"
-          accept="video/*"
-          multiple
-          className="hidden"
-          onChange={handleVideoUpload}
-        />
-
-        <Button className="bg-purple-500 py-2 px-4 rounded-md mb-4 w-full text-sm flex items-center justify-center">
+          <Video className="w-4 h-4 mr-2" />
           <label htmlFor="sticker-upload" className="cursor-pointer">
             Ajouter un sticker
           </label>
@@ -196,6 +203,7 @@ const VideoWatermarkPage = () => {
           onChange={handleStickerUpload}
         />
 
+        {/* Slider to adjust the size of the sticker */}
         {showSticker && (
           <div className="w-full mt-4">
             <label className="block text-sm font-medium mb-2">Taille du filigrane</label>
@@ -203,20 +211,15 @@ const VideoWatermarkPage = () => {
               type="range"
               min="50"
               max="500"
-              value={stickerSize.width}
-              onChange={(e) =>
-                setStickerSize({
-                  width: parseInt(e.target.value),
-                  height: parseInt(e.target.value),
-                })
-              }
+              value={stickerSize.width} // Assume the height follows the width for simplicity
+              onChange={handleSizeChange}
               className="w-full"
             />
           </div>
         )}
 
         <Button
-          onClick={applyWatermarkAndDownloadZip}
+          onClick={downloadVideosAsZip}
           className="py-3 px-6 rounded-md mt-auto w-full text-sm flex items-center justify-center"
         >
           Télécharger

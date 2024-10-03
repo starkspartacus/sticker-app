@@ -20,14 +20,14 @@ const UploadButton = () => {
   };
 
   return (
-    <>
+    <div>
       <Button>
         <label htmlFor="file-upload" className="cursor-pointer">
           Sélectionner des Images
         </label>
       </Button>
       <input id="file-upload" type="file" multiple className="hidden" onChange={handleFileChange} />
-    </>
+    </div>
   );
 };
 
