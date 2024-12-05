@@ -1,3 +1,4 @@
+import React from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { db } from "@/db"; // Assurez-vous que le chemin est correct vers votre `db/index.ts`
@@ -18,7 +19,9 @@ export default async function DashboardPage() {
 
   // Si l'utilisateur n'existe pas dans la base de données, l'ajouter
   if (!dbUser) {
-    console.log("Utilisateur non trouvé dans la base de données. Création de l'utilisateur...");
+    console.log(
+      "Utilisateur non trouvé dans la base de données. Création de l'utilisateur..."
+    );
     dbUser = await db.user.create({
       data: {
         id: user.id, // ID de l'utilisateur Kinde
@@ -47,8 +50,8 @@ export default async function DashboardPage() {
               </div>
               <h2 className="text-2xl font-semibold">Images</h2>
               <p className="text-muted-foreground">
-                Ajoutez des stickers à vos images en quelques clics. Personnalisez la taille et la
-                position selon vos besoins.
+                Ajoutez des stickers à vos images en quelques clics.
+                Personnalisez la taille et la position selon vos besoins.
               </p>
               <br />
               <Link href="/images" className="block">
@@ -65,8 +68,8 @@ export default async function DashboardPage() {
               </div>
               <h2 className="text-2xl font-semibold">Vidéos</h2>
               <p className="text-muted-foreground">
-                Donnez vie à vos vidéos avec des stickers animés. Contrôlez leur apparence tout au
-                long de la vidéo.
+                Donnez vie à vos vidéos avec des stickers animés. Contrôlez leur
+                apparence tout au long de la vidéo.
               </p>
               <br />
               <Link href="/videos" className="block">
