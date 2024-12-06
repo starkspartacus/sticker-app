@@ -11,7 +11,15 @@ import { useFFmpeg } from "@/hooks/use-ffmpeg";
 import { cn } from "@/lib/utils";
 import { fetchFile } from "@ffmpeg/util";
 import JSZip from "jszip";
-import { Download, Minus, Plus, Trash2, Upload, ZoomIn, ZoomOut } from "lucide-react";
+import {
+  Download,
+  Minus,
+  Plus,
+  Trash2,
+  Upload,
+  ZoomIn,
+  ZoomOut,
+} from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -31,7 +39,10 @@ export default function VideosPage() {
   const [selectedVideoId, setSelectedVideoId] = useState<string | null>(null);
   const [selectedSticker, setSelectedSticker] = useState<string | null>(null);
   const [scale, setScale] = useState(1);
-  const [stickerPosition, setStickerPosition] = useState<StickerPosition>({ x: 0, y: 0 });
+  const [stickerPosition, setStickerPosition] = useState<StickerPosition>({
+    x: 0,
+    y: 0,
+  });
   const [canvasSize, setCanvasSize] = useState({ width: 0, height: 0 });
   const [isDownloading, setIsDownloading] = useState(false);
   const [stickerSize, setStickerSize] = useState(0.3);
@@ -123,7 +134,9 @@ export default function VideosPage() {
 
           await ffmpeg.writeFile(inputFileName, await fetchFile(videoBlob));
 
-          const stickerBlob = await fetch(selectedSticker).then((r) => r.blob());
+          const stickerBlob = await fetch(selectedSticker).then((r) =>
+            r.blob()
+          );
           const stickerFileName = `sticker_${i}.png`;
           await ffmpeg.writeFile(stickerFileName, await fetchFile(stickerBlob));
 
@@ -138,7 +151,8 @@ export default function VideosPage() {
           const videoHeight = videoElement.videoHeight;
           URL.revokeObjectURL(videoElement.src);
 
-          const stickerBaseSize = Math.min(videoWidth, videoHeight) * stickerSize;
+          const stickerBaseSize =
+            Math.min(videoWidth, videoHeight) * stickerSize;
           const xPos = Math.round(videoWidth * xRatio);
           const yPos = Math.round(videoHeight * yRatio);
 
@@ -171,7 +185,8 @@ export default function VideosPage() {
           }
 
           const outputBlob = new Blob([uint8Array], { type: "video/mp4" });
-          const videoName = video.name.replace(/\.[^/.]+$/, "") + "_with_sticker.mp4";
+          const videoName =
+            video.name.replace(/\.[^/.]+$/, "") + "_with_sticker.mp4";
           zip.file(videoName, outputBlob);
 
           await ffmpeg.deleteFile(inputFileName);
@@ -180,7 +195,10 @@ export default function VideosPage() {
 
           setProgress(((i + 1) / totalVideos) * 100);
         } catch (error) {
-          console.error(`Erreur lors du traitement de la vidéo ${video.name}:`, error);
+          console.error(
+            `Erreur lors du traitement de la vidéo ${video.name}:`,
+            error
+          );
           toast.error(`Erreur lors du traitement de ${video.name}`);
         }
       }
@@ -227,7 +245,9 @@ export default function VideosPage() {
           <div className="space-y-4">
             <Card className="p-4 sm:p-6 space-y-4">
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                <h2 className="text-xl sm:text-2xl font-semibold">Zone de travail</h2>
+                <h2 className="text-xl sm:text-2xl font-semibold">
+                  Zone de travail
+                </h2>
                 {selectedSticker && (
                   <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 w-full sm:w-auto">
                     <div className="flex items-center gap-2 w-full sm:w-auto">
@@ -238,21 +258,27 @@ export default function VideosPage() {
                         <Button
                           variant="outline"
                           size="icon"
-                          onClick={() => setStickerSize(Math.max(0.1, stickerSize - 0.05))}
+                          onClick={() =>
+                            setStickerSize(Math.max(0.1, stickerSize - 0.05))
+                          }
                         >
                           <Minus className="h-4 w-4" />
                         </Button>
                         <Button
                           variant="outline"
                           size="icon"
-                          onClick={() => setStickerSize(Math.min(1, stickerSize + 0.05))}
+                          onClick={() =>
+                            setStickerSize(Math.min(1, stickerSize + 0.05))
+                          }
                         >
                           <Plus className="h-4 w-4" />
                         </Button>
                       </div>
                     </div>
                     <div className="flex items-center gap-2 w-full sm:w-auto">
-                      <span className="text-sm text-muted-foreground">Zoom</span>
+                      <span className="text-sm text-muted-foreground">
+                        Zoom
+                      </span>
                       <div className="flex items-center gap-2 ml-auto sm:ml-0">
                         <Button
                           variant="outline"
@@ -306,7 +332,9 @@ export default function VideosPage() {
 
             {videos.length > 0 && (
               <Card className="p-4">
-                <h3 className="text-lg font-semibold mb-4">Vos vidéos ({videos.length})</h3>
+                <h3 className="text-lg font-semibold mb-4">
+                  Vos vidéos ({videos.length})
+                </h3>
                 <ScrollArea className="h-32">
                   <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 pb-4 pr-4">
                     {videos.map((video) => (
@@ -318,7 +346,10 @@ export default function VideosPage() {
                         )}
                         onClick={() => setSelectedVideoId(video.id)}
                       >
-                        <video src={video.data} className="w-full h-full object-cover rounded-lg" />
+                        <video
+                          src={video.data}
+                          className="w-full h-full object-cover rounded-lg"
+                        />
                       </Card>
                     ))}
                   </div>
@@ -362,7 +393,10 @@ export default function VideosPage() {
 
           <Card className="p-4 sm:p-6">
             <h2 className="text-xl sm:text-2xl font-semibold mb-4">Stickers</h2>
-            <StickerSelector onSelect={setSelectedSticker} selected={selectedSticker} />
+            <StickerSelector
+              onSelect={setSelectedSticker}
+              selected={selectedSticker}
+            />
           </Card>
         </div>
       </div>
